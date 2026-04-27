@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mail, Lock, User, Phone, MapPin, GraduationCap, Users, BookOpen, ArrowRight, Menu, X, LogOut, Globe, Grid, HelpCircle, FileText, Search, ChevronRight, ChevronLeft, Beaker, Briefcase, Palette, Star, AlertCircle, Building2, Calendar, CheckSquare, Award, IdCard, UploadCloud, MessageSquare, Video, Plus, Trash2, PlayCircle, Bell, Heart, ThumbsUp, Send, ShieldAlert, MessageCircle, Navigation, Clock, ShieldCheck, CreditCard, Activity, Key, Settings, Server, BarChart3, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, MapPin, GraduationCap, Users, BookOpen, ArrowRight, Menu, X, LogOut, Globe, Grid, HelpCircle, FileText, Search, ChevronRight, ChevronLeft, Beaker, Briefcase, Palette, Star, AlertCircle, Building2, Calendar, CheckSquare, Award, IdCard, UploadCloud, MessageSquare, Video, Plus, Trash2, PlayCircle, Bell, Heart, ThumbsUp, Send, ShieldAlert, MessageCircle, Navigation, Clock, ShieldCheck, CreditCard, Activity, Key, Settings, Server, BarChart3, CheckCircle2, School, PlaySquare } from 'lucide-react';
 
 // ==========================================
 // 1. TRANSLATION DICTIONARY
@@ -61,7 +61,7 @@ const translations = {
   }
 };
 
-const supportedLanguages = ['UK English', 'Bangla (বাংলা)', 'Hindi (हिन्दी)', 'Urdu (اردو)', 'Tamil (தமிழ்)'];
+const supportedLanguages = ['UK English', 'Bangla (বাংলা)', 'Hindi (हिन्दी)', 'Urdu (اردো)', 'Tamil (தமிழ்)'];
 
 // ==========================================
 // 2. PROGRAMMATIC MOCK DATA GENERATION
@@ -106,7 +106,8 @@ const mockTutors = Array.from({ length: 1000 }, (_, i) => {
     locationName: `${areas[Math.floor(Math.random() * areas.length)]}, Dhaka`,
     university: unis[Math.floor(Math.random() * unis.length)],
     achievements: 'Top rated educator on the platform.',
-    slots: ['Sat-Mon-Wed 10:00 AM', 'Sun-Tue-Thu 04:00 PM']
+    slots: ['Sat-Mon-Wed 10:00 AM', 'Sun-Tue-Thu 04:00 PM'],
+    isVerified: Math.random() > 0.3
   };
 });
 
@@ -115,10 +116,13 @@ const initialVideos = mockTutors.slice(0, 1000).map((tutor, i) => ({
   tutorId: tutor.id,
   tutorName: tutor.name,
   subject: tutor.subjects[0],
+  level: tutor.subjectData[0].level,
   title: `Mastering ${tutor.subjects[0]} - Session ${i + 1}`,
   thumbnail: `https://images.unsplash.com/photo-${1500000000000 + i}?auto=format&fit=crop&q=80&w=400&h=250`,
   rating: tutor.rating,
-  reactions: Math.floor(Math.random() * 100),
+  reactionsLove: Math.floor(Math.random() * 50),
+  reactionsGood: Math.floor(Math.random() * 100),
+  reactionsNotGood: Math.floor(Math.random() * 10),
   comments: []
 }));
 
@@ -171,6 +175,26 @@ export default function App() {
   const scrollContainerRef = useRef(null);
   
   const [globalVideos, setGlobalVideos] = useState(initialVideos);
+  
+  const handleVideoReaction = (videoId, type) => {
+    setGlobalVideos(prev => prev.map(v => {
+      if (v.id === videoId) {
+        if (type === 'love') return { ...v, reactionsLove: (v.reactionsLove||0) + 1 };
+        if (type === 'good') return { ...v, reactionsGood: (v.reactionsGood||0) + 1 };
+        if (type === 'notGood') return { ...v, reactionsNotGood: (v.reactionsNotGood||0) + 1 };
+      }
+      return v;
+    }));
+    // Also update modal if open
+    if (activeVideoModal && activeVideoModal.id === videoId) {
+      setActiveVideoModal(prev => {
+        if (type === 'love') return { ...prev, reactionsLove: (prev.reactionsLove||0) + 1 };
+        if (type === 'good') return { ...prev, reactionsGood: (prev.reactionsGood||0) + 1 };
+        if (type === 'notGood') return { ...prev, reactionsNotGood: (prev.reactionsNotGood||0) + 1 };
+        return prev;
+      });
+    }
+  };
   const [selectedLanguage, setSelectedLanguage] = useState('UK English');
   const [isLangMenuExpanded, setIsLangMenuExpanded] = useState(false);
   const t = (key) => translations[selectedLanguage]?.[key] || translations['UK English'][key] || key;
@@ -195,7 +219,18 @@ export default function App() {
   const [selectedLevel, setSelectedLevel] = useState(''); 
   const [selectedGroup, setSelectedGroup] = useState(''); 
   const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedUniversity, setSelectedUniversity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Video Search States
+  const [videoSearchQuery, setVideoSearchQuery] = useState('');
+  const [videoLevelFilter, setVideoLevelFilter] = useState('');
+  const [videoSubjectFilter, setVideoSubjectFilter] = useState('');
+
+  const [isNearbyActive, setIsNearbyActive] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+
   const [selectedTutor, setSelectedTutor] = useState(null); 
   const [activeVideoModal, setActiveVideoModal] = useState(null); 
   const [newCommentText, setNewCommentText] = useState('');
@@ -209,7 +244,21 @@ export default function App() {
   const [paymentModalData, setPaymentModalData] = useState(null);
 
   const [isProfileComplete, setIsProfileComplete] = useState(false);
-  const [tutorProfile, setTutorProfile] = useState({ certName: '', homeAddress: '', currentAddress: '', varsityMail: '', university: '', prevTuitions: '', achievements: '', askingPrice: '', uniRankLink: '', profilePic: null, cvFile: null, agreeTerms: false });
+  const [tutorProfile, setTutorProfile] = useState({ 
+    certName: '', 
+    homeAddress: '', 
+    currentAddress: '', 
+    varsityMail: '', 
+    university: '', 
+    prevTuitions: '', 
+    achievements: '', 
+    askingPrice: '', 
+    uniRankLink: '', 
+    profilePic: null, 
+    cvFile: null, 
+    agreeTerms: false,
+    slots: ['Sat-Mon-Wed 10:00 AM', 'Sun-Tue-Thu 04:00 PM']
+  });
   const [studentProfile, setStudentProfile] = useState({ fullName: '', email: '', mobile: '', address: '', institution: '', profilePic: null });
   const [parentProfile, setParentProfile] = useState({ fullName: '', email: '', mobile: '', address: '', childSubjects: '', profilePic: null });
   
@@ -218,9 +267,6 @@ export default function App() {
   const [hasMembership, setHasMembership] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
   const [tutorRequests, setTutorRequests] = useState([{ id: 201, studentName: 'Fahim Rahman', subject: 'Higher Math', level: 'HSC', status: 'pending' }]);
-
-  const [isNearbyActive, setIsNearbyActive] = useState(false);
-  const [isLocating, setIsLocating] = useState(false);
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [tutorNotifs, setTutorNotifs] = useState([
@@ -232,6 +278,24 @@ export default function App() {
   const [idFront, setIdFront] = useState(null);
   const [idBack, setIdBack] = useState(null);
 
+  const [verificationStep, setVerificationStep] = useState('none'); // 'none', 'scanning', 'matching', 'verified'
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [ocrData, setOcrData] = useState(null);
+  const [selfiePhoto, setSelfiePhoto] = useState(null);
+
+  const runSecurityVerification = async () => {
+    if (!idFront) return alert("Please upload ID front first.");
+    setIsVerifying(true);
+    setVerificationStep('scanning');
+    await new Promise(r => setTimeout(r, 3000));
+    setOcrData({ name: formData.name || 'VERIFIED USER', idNumber: 'NID-99203948576', status: 'Authentic' });
+    
+    setVerificationStep('matching');
+    await new Promise(r => setTimeout(r, 3000));
+    setVerificationStep('verified');
+    setIsVerifying(false);
+  };
+
   const roleConfig = {
     student: { icon: <GraduationCap size={16} />, label: t('student'), color: 'bg-blue-500', text: 'text-blue-500', border: 'border-blue-500', bgLight: 'bg-blue-50', message: t('msgStudent') },
     guardian: { icon: <Users size={16} />, label: t('guardian'), color: 'bg-indigo-500', text: 'text-indigo-500', border: 'border-indigo-500', bgLight: 'bg-indigo-50', message: t('msgGuardian') },
@@ -240,16 +304,43 @@ export default function App() {
     superAdmin: { icon: <Server size={16} />, label: t('superAdmin'), color: 'bg-rose-700', text: 'text-rose-700', border: 'border-rose-700', bgLight: 'bg-rose-50', message: t('msgSuperAdmin') }
   };
 
+  const calculateProfileProgress = () => {
+    let totalFields = 0;
+    let filledFields = 0;
+
+    const commonFields = ['name', 'email', 'mobile', 'address'];
+    commonFields.forEach(f => {
+      totalFields++;
+      if (formData[f]) filledFields++;
+    });
+
+    if (role === 'tutor') {
+      const tutorFields = ['university', 'prevTuitions', 'askingPrice'];
+      tutorFields.forEach(f => {
+        totalFields++;
+        if (tutorProfile[f]) filledFields++;
+      });
+      totalFields++; if (tutorProfile.profilePic) filledFields++;
+    } else {
+      totalFields++; if (studentProfile.institution) filledFields++;
+      totalFields++; if (studentProfile.profilePic) filledFields++;
+    }
+
+    return Math.round((filledFields / totalFields) * 100);
+  };
+
+  const profileProgress = calculateProfileProgress();
+
   // --- SMART SEARCH & SUGGESTION LOGIC ---
   const getSearchResults = () => {
     const allMatches = [...mockTutors].filter(t => {
       const nameMatch = searchQuery ? t.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
-      if (!nameMatch) return false;
+      const uniMatch = selectedUniversity ? t.university.toLowerCase().includes(selectedUniversity.toLowerCase()) : true;
+      
+      if (!nameMatch || !uniMatch) return false;
 
-      // If no filters, everyone matches the name search
       if (!selectedLevel && !selectedGroup && !selectedSubject) return true;
 
-      // Level/Group/Subject matching
       return t.subjectData.some(s => {
         const levelMatch = selectedLevel ? s.level === selectedLevel : true;
         const groupMatch = selectedGroup ? s.group === selectedGroup : true;
@@ -258,17 +349,13 @@ export default function App() {
       });
     });
 
-    // 1. Best Rated Matches (Exact matches, Rating >= 4.7)
     const topMatches = allMatches
       .filter(t => parseFloat(t.rating) >= 4.7)
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) => isNearbyActive ? (a.distance - b.distance) : (b.rating - a.rating))
       .slice(0, 10);
 
-    // 2. Suggestions (Same subject different level, or lower rated exact matches)
     const exactIds = new Set(topMatches.map(t => t.id));
-    
     const otherMatches = allMatches.filter(t => !exactIds.has(t.id));
-    
     const sameSubjectDiffLevel = mockTutors.filter(t => {
       if (exactIds.has(t.id)) return false;
       if (!selectedSubject) return false;
@@ -276,7 +363,7 @@ export default function App() {
     });
 
     const suggestions = [...otherMatches, ...sameSubjectDiffLevel]
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) => isNearbyActive ? (a.distance - b.distance) : (b.rating - a.rating))
       .slice(0, 15);
 
     return { topMatches, suggestions };
@@ -284,7 +371,37 @@ export default function App() {
 
   const { topMatches, suggestions } = getSearchResults();
 
+  const handleFindNearby = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+        setIsLocating(false);
+        setIsNearbyActive(true);
+      },
+      () => {
+        setIsLocating(false);
+        alert("Unable to retrieve location.");
+      }
+    );
+  };
+
   const filteredBookings = studentBookings.filter(b => bookingFilter === 'all' || b.status === bookingFilter);
+
+  const filteredVideos = globalVideos.map(video => {
+    const tutor = mockTutors.find(t => t.id === video.tutorId);
+    return { ...video, tutorDistance: tutor ? parseFloat(tutor.distance) : 999 };
+  }).filter(video => {
+    const matchesSearch = video.tutorName.toLowerCase().includes(videoSearchQuery.toLowerCase()) || 
+                          video.title.toLowerCase().includes(videoSearchQuery.toLowerCase());
+    const matchesSubject = !videoSubjectFilter || video.subject === videoSubjectFilter;
+    const matchesLevel = !videoLevelFilter || video.level === videoLevelFilter;
+    return matchesSearch && matchesSubject && matchesLevel;
+  }).sort((a, b) => isNearbyActive ? (a.tutorDistance - b.tutorDistance) : 0);
 
   const handleLevelChange = (level) => { setSelectedLevel(level); setSelectedGroup(''); setSelectedSubject(''); };
   const handleGroupChange = (group) => { setSelectedGroup(group); setSelectedSubject(''); };
@@ -299,17 +416,10 @@ export default function App() {
     profileSetter(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : (type === 'file' ? files[0] : value) }));
   };
 
-  const handleTutorProfileChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    setTutorProfile(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : (type === 'file' ? files[0] : value) }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     if ((role === 'admin' || role === 'superAdmin') && !otpStep) {
-      if (!navigator.geolocation) { alert("Geolocation not supported."); setIsSubmitting(false); return; }
-      
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setAdminLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -332,14 +442,8 @@ export default function App() {
     if(role === 'admin' || role === 'superAdmin') setActivePage('adminHome');
   };
 
-  const calculateProfileProgress = (profileObj) => {
-    const fields = Object.values(profileObj);
-    const filled = fields.filter(f => f && (typeof f !== 'string' || f.trim() !== '')).length;
-    return Math.round((filled / fields.length) * 100);
-  };
-
   const handleInitiateBooking = (tutor) => {
-    const progress = role === 'student' ? calculateProfileProgress(studentProfile) : calculateProfileProgress(parentProfile);
+    const progress = calculateProfileProgress();
     if (progress < 80) {
       alert(`${t('profileIncomplete')} (${progress}%)`);
       setActivePage('updateProfile'); setSelectedTutor(null);
@@ -365,8 +469,26 @@ export default function App() {
     if (!file) return;
     const subId = `${item.level}-${item.subject}`;
     setTutorVideos(prev => ({...prev, [subId]: file}));
-    const newVid = { id: `v_${Date.now()}`, tutorId: 99, tutorName: formData.name || 'New Teacher', subject: item.subject, title: `${item.level} ${item.subject} Video Tutorial`, thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3', rating: 0, reactions: 0, comments: [] };
+    const newVid = { 
+      id: `v_${Date.now()}`, 
+      tutorId: 99, 
+      tutorName: formData.name || 'New Teacher', 
+      subject: item.subject, 
+      level: item.level,
+      title: `${item.level} ${item.subject} Video Tutorial`, 
+      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3', 
+      rating: 0, 
+      reactionsLove: 0,
+      reactionsGood: 0,
+      reactionsNotGood: 0,
+      comments: [] 
+    };
     setGlobalVideos(prev => [newVid, ...prev]);
+  };
+
+  const handleUpdateSlots = (newSlots) => {
+    setTutorProfile(prev => ({ ...prev, slots: newSlots }));
+    alert("Time slots updated successfully!");
   };
 
   const handlePostComment = () => {
@@ -401,7 +523,6 @@ export default function App() {
     }
   };
 
-
   let displayPage = activePage;
   if (role === 'tutor' && !isProfileComplete && activePage !== 'support') displayPage = 'updateProfile';
 
@@ -426,6 +547,17 @@ export default function App() {
               <div className="flex items-center gap-4 cursor-pointer group" onClick={() => { const tutor = mockTutors.find(t => t.id === activeVideoModal.tutorId); if (tutor) { setSelectedTutor(tutor); setActiveVideoModal(null); setActivePage('dashboard'); window.scrollTo(0,0); } }}>
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center font-bold text-white text-2xl shadow-md border-2 border-white group-hover:scale-105 transition-all">{activeVideoModal.tutorName.charAt(0)}</div>
                 <div><p className="font-bold text-lg text-slate-800 group-hover:text-blue-600">{activeVideoModal.tutorName}</p><p className="text-sm font-semibold text-slate-500">{t(activeVideoModal.subject)} Teacher</p></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => handleVideoReaction(activeVideoModal.id, 'love')} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-50 text-rose-600 font-bold border border-rose-100 hover:bg-rose-100 transition-all">
+                  <Heart size={18} fill="currentColor" /> {activeVideoModal.reactionsLove}
+                </button>
+                <button onClick={() => handleVideoReaction(activeVideoModal.id, 'good')} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 font-bold border border-emerald-100 hover:bg-emerald-100 transition-all">
+                  <ThumbsUp size={18} fill="currentColor" /> {activeVideoModal.reactionsGood}
+                </button>
+                <button onClick={() => handleVideoReaction(activeVideoModal.id, 'notGood')} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-50 text-slate-600 font-bold border border-slate-100 hover:bg-slate-100 transition-all">
+                  <ThumbsUp size={18} fill="currentColor" className="rotate-180" /> {activeVideoModal.reactionsNotGood}
+                </button>
               </div>
             </div>
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-8">
@@ -550,6 +682,15 @@ export default function App() {
               <div className={`hidden md:block px-3 py-1.5 rounded-full text-sm font-bold ${roleConfig[role].bgLight} ${roleConfig[role].text}`}>
                 {roleConfig[role].label} {t('portal')}
               </div>
+              <button 
+                onClick={() => { setActivePage('updateProfile'); setIsMenuOpen(false); window.scrollTo(0,0); }} 
+                className={`flex items-center gap-2 p-1.5 rounded-full border-2 transition-all ${activePage === 'updateProfile' ? 'border-blue-500 bg-blue-50' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                title={t('updateProfile')}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${roleConfig[role].color}`}>
+                  {formData.name ? formData.name.charAt(0).toUpperCase() : <User size={18} />}
+                </div>
+              </button>
             </div>
           </nav>
 
@@ -588,7 +729,7 @@ export default function App() {
                 <div className="flex flex-col"><button onClick={() => setIsLangMenuExpanded(!isLangMenuExpanded)} className="w-full flex items-center justify-between px-3 py-3 text-slate-600 hover:bg-slate-50 rounded-lg text-left"><div className="flex items-center gap-3"><Globe size={20} /> <span className="font-medium">{t('language')}</span></div><ChevronRight size={16} className={isLangMenuExpanded ? 'rotate-90' : ''} /></button><div className={`overflow-hidden transition-all duration-300 ${isLangMenuExpanded ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}><div className={`px-3 py-2 space-y-1 bg-slate-50/50 rounded-lg mx-2 border ${dir === 'rtl' ? 'pr-11' : 'pl-11'}`}>{supportedLanguages.map(lang => (<button key={lang} onClick={() => { setSelectedLanguage(lang); setIsLangMenuExpanded(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md hover:bg-slate-200 ${selectedLanguage === lang ? 'font-bold' : ''}`}>{lang}</button>))}</div></div></div>
                 <button onClick={() => { setActivePage('support'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'support' ? 'bg-orange-50 text-orange-700' : 'text-slate-600 hover:bg-slate-50'}`}><HelpCircle size={20} /> <span>{t('support')}</span></button>
               </div>
-              <div className="px-4 border-t border-slate-100 pt-4"><button onClick={() => { setIsAuthenticated(false); setIsMenuOpen(false); setOtpStep(false); setOtp(''); }} className="w-full flex items-center gap-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg text-left font-medium"><LogOut size={20} /> {t('logout')}</button></div>
+              <div className="px-4 border-t border-slate-100 pt-4"><button onClick={() => { setIsAuthenticated(false); setIsMenuOpen(false); setOtpStep(false); setOtp(''); }} className="w-full flex items-gap-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg text-left font-medium"><LogOut size={20} /> {t('logout')}</button></div>
             </div>
           </div>
 
@@ -606,21 +747,6 @@ export default function App() {
                      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-center gap-2"><div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center mb-2"><ShieldAlert size={20}/></div><p className="text-slate-500 font-bold text-xs uppercase">Pending KYC</p><p className="text-3xl font-black text-amber-600">{adminPendingUsers.length}</p></div>
                      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-center gap-2"><div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-2"><CreditCard size={20}/></div><p className="text-slate-500 font-bold text-xs uppercase">Total Revenue</p><p className="text-3xl font-black text-purple-600">৳{totalRevenue}</p></div>
                   </div>
-                  
-                  <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-                     <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><BarChart3 className="text-emerald-500"/> Weekly Tuition Growth</h3>
-                     <div className="flex items-end justify-center gap-4 h-48 mt-8 border-b-2 border-l-2 border-slate-100 pb-2 pl-2">
-                        {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
-                           <div key={i} className="w-10 sm:w-12 bg-slate-100 rounded-t-lg relative group">
-                              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-slate-800 text-white text-xs font-bold py-1 px-2 rounded whitespace-nowrap z-10 shadow-lg">{h} Tuitions</div>
-                              <div className="bg-emerald-500 rounded-t-lg transition-all duration-500 hover:bg-emerald-400 cursor-pointer" style={{height: `${h}%`}}></div>
-                           </div>
-                        ))}
-                     </div>
-                     <div className="flex justify-center gap-4 sm:gap-6 mt-4 text-xs font-bold text-slate-400">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                     </div>
-                  </div>
               </div>
             )}
 
@@ -631,21 +757,10 @@ export default function App() {
                      {adminPendingUsers.length === 0 ? (
                         <div className="text-center text-slate-400 py-12 border-2 border-dashed border-slate-200 rounded-2xl font-bold">No pending verifications!</div>
                      ) : (
-                        <div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-slate-200 text-slate-400 text-xs uppercase"><th className="pb-4 font-bold">User</th><th className="pb-4 font-bold">Role</th><th className="pb-4 font-bold">Docs</th><th className="pb-4 font-bold text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">
-                             {adminPendingUsers.map(u => (<tr key={u.id} className="hover:bg-slate-50 group transition-colors"><td className="py-4 font-bold text-slate-800">{u.name} <br/><span className="text-xs text-slate-400 font-medium">NID: {u.nid}</span></td><td className="py-4"><span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">{u.role}</span></td><td className="py-4 text-indigo-600 font-semibold text-sm cursor-pointer hover:underline flex items-center gap-1"><FileText size={16}/> View {u.documents}</td><td className="py-4 text-right"><div className="flex justify-end gap-2"><button onClick={()=>verifyUser(u.id)} className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-sm">{t('accept')}</button><button onClick={()=>rejectUser(u.id)} className="px-4 py-2 bg-white text-red-500 font-bold rounded-xl border hover:bg-red-50 transition-colors shadow-sm">Reject</button></div></td></tr>))}
+                        <div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-slate-200 text-slate-400 text-xs uppercase"><th className="pb-4 font-bold">User</th><th className="pb-4 font-bold">Role</th><th className="pb-4 font-bold text-right">Actions</th></tr></thead><tbody className="divide-y divide-slate-100">
+                             {adminPendingUsers.map(u => (<tr key={u.id} className="hover:bg-slate-50 transition-colors"><td className="py-4 font-bold text-slate-800">{u.name}</td><td className="py-4"><span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">{u.role}</span></td><td className="py-4 text-right"><div className="flex justify-end gap-2"><button onClick={()=>verifyUser(u.id)} className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-sm">{t('accept')}</button><button onClick={()=>rejectUser(u.id)} className="px-4 py-2 bg-white text-red-500 font-bold rounded-xl border hover:bg-red-50 transition-colors shadow-sm">Reject</button></div></td></tr>))}
                            </tbody></table></div>
                      )}
-                  </div>
-              </div>
-            )}
-
-            {(role === 'admin' || role === 'superAdmin') && activePage === 'adminUsers' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="bg-slate-900 p-8 rounded-3xl text-white shadow-lg mb-8"><h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Users size={32} /> {t('adminUsers')}</h2></div>
-                  <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-                     <div className="overflow-x-auto"><table className="w-full text-left"><thead><tr className="border-b border-slate-200 text-slate-400 text-xs uppercase"><th className="pb-4 font-bold">Name</th><th className="pb-4 font-bold">Role</th><th className="pb-4 font-bold">Status</th><th className="pb-4 font-bold text-right">Settings</th></tr></thead><tbody className="divide-y divide-slate-100">
-                             {adminAllUsers.map(u => (<tr key={u.id} className="hover:bg-slate-50 transition-colors"><td className="py-4 font-bold text-slate-800">{u.name}</td><td className="py-4 text-sm font-medium text-slate-500">{u.role}</td><td className="py-4"><span className={`px-3 py-1 rounded-full text-xs font-bold ${u.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>{u.status}</span></td><td className="py-4 text-right">{u.status === 'Active' ? <button onClick={()=>toggleUserStatus(u.id)} className="px-4 py-1.5 bg-slate-100 text-red-600 font-bold rounded-lg hover:bg-red-50 text-xs border">Suspend</button> : <button onClick={()=>toggleUserStatus(u.id)} className="px-4 py-1.5 bg-slate-100 text-emerald-600 font-bold rounded-lg hover:bg-emerald-50 text-xs border">Activate</button>}</td></tr>))}
-                           </tbody></table></div>
                   </div>
               </div>
             )}
@@ -657,7 +772,7 @@ export default function App() {
                   <div className="flex flex-col md:flex-row">
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 flex flex-col items-center justify-center md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200">
                       <img src={selectedTutor.image} className="w-40 h-40 rounded-full border-4 border-white shadow-lg mb-5 object-cover" />
-                      <h2 className="text-2xl font-bold text-slate-800 text-center">{selectedTutor.name}</h2>
+                      <h2 className="text-2xl font-bold text-slate-800 text-center flex items-center justify-center gap-2">{selectedTutor.name} {selectedTutor.isVerified && <ShieldCheck size={20} className="text-blue-500 fill-blue-50" />}</h2>
                       <div className="flex items-center gap-1 mt-3 text-amber-500 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-100"><Star size={18} fill="currentColor" /><span className="font-bold text-lg">{selectedTutor.rating}</span></div>
                       <div className="mt-8 text-center bg-white/60 px-6 py-4 rounded-2xl backdrop-blur-sm border border-white/50 w-full shadow-sm"><p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('hourlyRate')}</p><p className="text-3xl font-black text-blue-600">{selectedTutor.rate}</p></div>
                     </div>
@@ -681,16 +796,195 @@ export default function App() {
 
             {!selectedTutor && displayPage === 'dashboard' && role !== 'admin' && role !== 'superAdmin' && (
               <div className="space-y-8 animate-in fade-in duration-500">
-                <div className={`p-8 rounded-2xl ${roleConfig[role].color} text-white shadow-lg`}><h2 className="text-3xl font-bold mb-2">{t('welcome')}</h2><p className="text-white/90 text-lg">{roleConfig[role].message}</p></div>
+                <div className={`p-8 rounded-2xl ${roleConfig[role].color} text-white shadow-lg relative overflow-hidden`}>
+                  <div className="relative z-10">
+                    <h2 className="text-3xl font-bold mb-2">{t('welcome')}</h2>
+                    <p className="text-white/90 text-lg mb-6">{roleConfig[role].message}</p>
+                    
+                    {/* Compact Dashboard Progress Bar */}
+                    <div className="max-w-xs bg-white/20 backdrop-blur-md p-4 rounded-2xl border border-white/30">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider">{t('profileProgress')}</span>
+                        <span className="text-sm font-black">{profileProgress}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-black/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-white rounded-full transition-all duration-1000" style={{ width: `${profileProgress}%` }}></div>
+                      </div>
+                      {profileProgress < 100 && (
+                        <button onClick={() => setActivePage('updateProfile')} className="mt-3 text-[10px] font-black bg-white text-slate-800 px-3 py-1 rounded-full uppercase hover:bg-slate-100 transition-colors">
+                          Complete Now
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 transform scale-150">
+                    {roleConfig[role].icon}
+                  </div>
+                </div>
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {(role === 'student' || role === 'guardian') ? (
                     <>
-                      <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 col-span-1 md:col-span-2"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Search className="text-blue-500" /> {t('findTutor')}</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select><select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup} className="flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select><select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select></div>{selectedSubject && <button onClick={() => { setActivePage('findTutor'); window.scrollTo(0,0); }} className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold">{t('search')}</button>}</div>
-                      <div className="col-span-1 md:col-span-2 mt-4"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoFeed')}</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{globalVideos.slice(0,6).map(video => (<div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}><div className="relative h-40 bg-slate-200"><img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /><div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center"><PlayCircle size={48} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" /></div><span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2 py-1 rounded-md">{t(video.subject)}</span></div><div className="p-4 flex-1 flex flex-col"><h4 className="font-bold text-slate-800 line-clamp-1">{video.title}</h4><p onClick={(e) => { e.stopPropagation(); const tutor = mockTutors.find(t => t.id === video.tutorId); if(tutor) { setSelectedTutor(tutor); window.scrollTo(0,0); } }} className="text-sm text-slate-500 mb-4 hover:text-blue-600 hover:underline cursor-pointer w-max transition-colors">{video.tutorName}</p><div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100"><div className="flex items-center gap-3 text-slate-500 text-sm"><span className="flex items-center gap-1"><Heart size={16} className={video.reactions > 0 ? "fill-rose-500 text-rose-500" : ""} /> {video.reactions}</span><span className="flex items-center gap-1"><MessageSquare size={16} /> {video.comments.length}</span></div><span className="text-blue-600 font-semibold text-sm">{t('watchNow')}</span></div></div></div>))}</div></div>
+                      <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 col-span-1 md:col-span-2"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Search className="text-blue-500" /> {t('findTutor')}</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select><select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup} className="flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select><select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} className="flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select></div>{selectedSubject && <button onClick={() => { setActivePage('findTutor'); window.scrollTo(0,0); }} className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold">{t('search')}</button>}</div>
+                      <div className="col-span-1 md:col-span-2 mt-4"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoFeed')}</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {globalVideos.slice(0,6).map(video => (
+<div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}><div className="relative h-40 bg-slate-200"><img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /><div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center"><PlayCircle size={48} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" /></div><span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2 py-1 rounded-md">{t(video.subject)}</span></div><div className="p-4 flex-1 flex flex-col"><h4 className="font-bold text-slate-800 line-clamp-1">{video.title}</h4><p onClick={(e) => { e.stopPropagation(); const tutor = mockTutors.find(t => t.id === video.tutorId); if(tutor) { setSelectedTutor(tutor); window.scrollTo(0,0); } }} className="text-sm text-slate-500 mb-4 hover:text-blue-600 hover:underline cursor-pointer w-max transition-colors flex items-center gap-1">{video.tutorName} {mockTutors.find(t => t.id === video.tutorId)?.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</p><div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100"><div className="flex items-center gap-2 text-slate-500 text-[10px]"><span className="flex items-center gap-1 font-bold"><Heart size={12} className="text-rose-500 fill-rose-500" /> {video.reactionsLove}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-emerald-500 fill-emerald-500" /> {video.reactionsGood}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-slate-400 fill-slate-400 rotate-180" /> {video.reactionsNotGood}</span></div><span className="text-blue-600 font-semibold text-xs">{t('watchNow')}</span></div></div></div>))}</div></div>
+                      
+                      <div className="col-span-1 md:col-span-2 mt-4 relative">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><Star className="text-amber-500" fill="currentColor" /> {t('topTutors')}</h3>
+                          <div className="flex gap-2">
+                            <button onClick={() => scrollTutors('left')} className="p-2 rounded-full bg-white shadow-sm hover:shadow-md hover:bg-slate-50 transition-all border border-slate-200"><ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /></button>
+                            <button onClick={() => scrollTutors('right')} className="p-2 rounded-full bg-white shadow-sm hover:shadow-md hover:bg-slate-50 transition-all border border-slate-200"><ChevronRight size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /></button>
+                          </div>
+                        </div>
+                        <div ref={scrollContainerRef} className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden">
+                          {mockTutors.slice(0, 20).sort((a,b) => b.rating - a.rating).map(tutor => {
+                            const tutorVideoData = globalVideos.find(v => v.id === tutor.demoVideoId);
+                            return (
+                              <div key={tutor.id} className="min-w-[280px] sm:min-w-[300px] snap-center shrink-0 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col group hover:shadow-xl transition-shadow">
+                                <div className="relative h-40 w-full bg-slate-900 overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveVideoModal(tutorVideoData || globalVideos[0]); }}>
+                                  <img src={tutorVideoData?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-80 transition-all duration-500" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                                  <div className={`absolute bottom-3 ${dir === 'rtl' ? 'right-3' : 'left-3'} right-16 flex flex-col items-start gap-1`}>
+                                    <span className="text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded shadow-sm">{t(tutorVideoData?.subject || tutor.subjects[0])}</span>
+                                    <h4 className="text-white text-sm font-bold line-clamp-1 drop-shadow-md">{tutorVideoData?.title || 'Demo Masterclass'}</h4>
+                                  </div>
+                                  <PlayCircle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-100 transition-all scale-150 drop-shadow-2xl" />
+                                </div>
+                                <div className="p-5 pt-12 flex-1 text-center relative cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => setSelectedTutor(tutor)}>
+                                  <img src={tutor.image} className={`w-20 h-20 object-cover rounded-full border-4 border-white absolute -top-10 ${dir === 'rtl' ? 'left-4' : 'right-4'} shadow-md bg-white`} />
+                                  <div className="flex flex-col h-full justify-between">
+                                    <div className="text-left">
+                                      <h4 className="text-lg font-bold text-slate-800 flex items-center gap-1">{tutor.name} {tutor.isVerified && <ShieldCheck size={16} className="text-blue-500 fill-blue-50" />}</h4>
+                                      <div className="flex items-center gap-1 mt-1 text-amber-500"><Star size={16} fill="currentColor" /><span className="font-bold text-sm">{tutor.rating}</span><span className="text-slate-400 text-xs ml-1">({tutor.reviews} {t('reviews')})</span></div>
+                                      <div className="text-xs font-semibold text-slate-500 flex items-center gap-1 mt-2"><MapPin size={12} className="text-emerald-500 shrink-0" /> <span className="truncate">{tutor.distance} {t('kmAway')} • {tutor.locationName}</span></div>
+                                    </div>
+                                    <button className="mt-6 w-full py-3 bg-slate-100 text-slate-800 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-colors border border-slate-200">View Profile</button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Show All Teachers Section Preview */}
+                      <div className="col-span-1 md:col-span-2 mt-8">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><Users className="text-blue-500" /> Explore Teacher Profiles</h3>
+                          <button onClick={() => { setActivePage('findTutor'); window.scrollTo(0,0); }} className="text-blue-600 font-bold hover:underline flex items-center gap-1">Explore All <ChevronRight size={16} /></button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                          {mockTutors.slice(20, 24).map(tutor => (
+                            <div key={tutor.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => setSelectedTutor(tutor)}>
+                              <div className="flex items-center gap-3 mb-3">
+                                <img src={tutor.image} className="w-12 h-12 rounded-full border border-slate-100" />
+                                <div>
+                                  <h4 className="font-bold text-slate-800 text-sm line-clamp-1 flex items-center gap-1">{tutor.name} {tutor.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</h4>
+                                  <div className="flex items-center gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[10px] font-bold">{tutor.rating}</span></div>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium line-clamp-1 mb-2">{tutor.subjects.join(', ')}</p>
+                              <div className="text-[9px] text-slate-400 flex items-center gap-1"><MapPin size={10} className="text-emerald-500" /> {tutor.locationName}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Show All Demo Classes Section Preview */}
+                      <div className="col-span-1 md:col-span-2 mt-8 pb-12">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><PlaySquare className="text-rose-500" /> Explore Demo Classes</h3>
+                          <button onClick={() => { setActivePage('demoClasses'); window.scrollTo(0,0); }} className="text-rose-600 font-bold hover:underline flex items-center gap-1">Watch All <ChevronRight size={16} /></button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                          {globalVideos.slice(6, 10).map(video => (
+                            <div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-all cursor-pointer group" onClick={() => setActiveVideoModal(video)}>
+                              <div className="relative h-28 bg-slate-100">
+                                <img src={video.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 flex items-center justify-center"><PlayCircle size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                              </div>
+                              <div className="p-3">
+                                <h4 className="font-bold text-slate-800 text-xs line-clamp-1 mb-1">{video.title}</h4>
+                                <p className="text-[9px] text-slate-500 font-medium">{video.tutorName}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </>
                   ) : (
+                    // TUTOR SECTION
                     <>
-                      <div className="col-span-1 md:col-span-2 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><BookOpen className="text-emerald-500" /> {t('teachingSubjects')}</h3><div className="flex gap-3 mb-6 flex-wrap">{tutorSelectedSubjects.length === 0 && <span className="text-slate-400 italic text-sm">No subjects added.</span>}{tutorSelectedSubjects.map(item => { const subId = `${item.level}-${item.subject}`; return (<span key={subId} className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-semibold border border-emerald-200 flex items-center gap-2">{t(item.level)} {t('Level')} - {t(item.subject)} <button onClick={() => setTutorSelectedSubjects(p => p.filter(s => s.subject !== item.subject || s.level !== item.level))}><X size={14} className="hover:text-red-500"/></button></span>)})}</div>{tutorSelectedSubjects.length < 3 && (<div className="flex flex-col md:flex-row gap-4"><select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select><select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select><select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select><button disabled={!selectedSubject} onClick={() => { setTutorSelectedSubjects(prev => [...prev, { level: selectedLevel, subject: selectedSubject }]); setSelectedSubject(''); }} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 hover:bg-emerald-600 transition-colors flex items-center gap-2"><Plus size={20}/> {t('addSubject')}</button></div>)}</div>
+                      {/* Quick Stats Row */}
+                      <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                          <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center"><Briefcase size={24}/></div>
+                          <div><p className="text-slate-400 font-bold text-[10px] uppercase tracking-wider">Total Requests</p><p className="text-2xl font-black text-slate-800">{tutorRequests.length}</p></div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                          <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center"><Heart size={24}/></div>
+                          <div><p className="text-slate-400 font-bold text-[10px] uppercase tracking-wider">Video Reach</p><p className="text-2xl font-black text-slate-800">{globalVideos.filter(v => v.tutorId === 99).reduce((acc, v) => acc + (v.reactionsLove||0) + (v.reactionsGood||0), 0)}</p></div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                          <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><Clock size={24}/></div>
+                          <div><p className="text-slate-400 font-bold text-[10px] uppercase tracking-wider">Active Slots</p><p className="text-2xl font-black text-slate-800">{tutorProfile.slots?.length || 0}</p></div>
+                        </div>
+                      </div>
+
+                      {/* Time Slots Management */}
+                      <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-2xl shadow-xl border border-slate-100 mt-4">
+                        <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><Clock className="text-blue-500" /> Manage Available Slots</h3>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {tutorProfile.slots?.map((slot, idx) => (
+                            <span key={idx} className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-2 border border-blue-100">
+                              {slot}
+                              <button onClick={() => handleUpdateSlots(tutorProfile.slots.filter((_, i) => i !== idx))} className="hover:text-red-500 transition-colors"><X size={12}/></button>
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <input id="new-slot-input" type="text" placeholder="e.g. Fri 10:00 AM" className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm focus:border-blue-500 transition-all" />
+                          <button onClick={() => {
+                            const val = document.getElementById('new-slot-input').value;
+                            if(val) {
+                              handleUpdateSlots([...(tutorProfile.slots || []), val]);
+                              document.getElementById('new-slot-input').value = '';
+                            }
+                          }} className="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md">Add Slot</button>
+                        </div>
+                      </div>
+
+                      {/* Video Performance */}
+                      <div className="col-span-1 md:col-span-2 bg-white p-6 rounded-2xl shadow-xl border border-slate-100 mt-4">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Activity className="text-rose-500" /> Video Performance</h3>
+                          <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Reach & Engagement</span>
+                        </div>
+                        <div className="space-y-4">
+                          {globalVideos.filter(v => v.tutorId === 99).length === 0 ? (
+                            <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                               <Video size={32} className="mx-auto text-slate-300 mb-2" />
+                               <p className="text-slate-400 font-bold text-sm italic">No videos uploaded yet.</p>
+                            </div>
+                          ) : (
+                            globalVideos.filter(v => v.tutorId === 99).map(v => (
+                              <div key={v.id} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-100 group">
+                                <div className="w-16 h-10 bg-slate-200 rounded-lg overflow-hidden shrink-0 shadow-sm"><img src={v.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /></div>
+                                <div className="flex-1 min-w-0"><h4 className="font-bold text-slate-800 text-sm truncate">{v.title}</h4><p className="text-[10px] text-slate-400 font-bold uppercase">{t(v.subject)} • {v.level}</p></div>
+                                <div className="flex items-center gap-4 text-xs font-black">
+                                  <div className="flex flex-col items-center"><Heart size={14} className="text-rose-500" /><span className="text-slate-600">{v.reactionsLove}</span></div>
+                                  <div className="flex flex-col items-center"><ThumbsUp size={14} className="text-emerald-500" /><span className="text-slate-600">{v.reactionsGood}</span></div>
+                                  <div className="flex flex-col items-center"><MessageSquare size={14} className="text-blue-500" /><span className="text-slate-600">{v.comments.length}</span></div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-span-1 md:col-span-2 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 mt-4"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><BookOpen className="text-emerald-500" /> {t('teachingSubjects')}</h3><div className="flex gap-3 mb-6 flex-wrap">{tutorSelectedSubjects.length === 0 && <span className="text-slate-400 italic text-sm">No subjects added.</span>}{tutorSelectedSubjects.map(item => { const subId = `${item.level}-${item.subject}`; return (<span key={subId} className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-semibold border border-emerald-200 flex items-center gap-2">{t(item.level)} {t('Level')} - {t(item.subject)} <button onClick={() => setTutorSelectedSubjects(p => p.filter(s => s.subject !== item.subject || s.level !== item.level))}><X size={14} className="hover:text-red-500"/></button></span>)})}</div>{tutorSelectedSubjects.length < 3 && (<div className="flex flex-col md:flex-row gap-4"><select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select><select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select><select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select></div>)} {selectedSubject && (<div className="mt-6 flex justify-end"><button onClick={() => { if(!tutorSelectedSubjects.find(s => s.subject === selectedSubject && s.level === selectedLevel)) { setTutorSelectedSubjects(prev => [...prev, {level: selectedLevel, group: selectedGroup, subject: selectedSubject}]); setSelectedLevel(''); setSelectedGroup(''); setSelectedSubject(''); } else { alert("Subject already added!"); } }} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold disabled:opacity-50 hover:bg-emerald-600 transition-colors flex items-center gap-2"><Plus size={20}/> {t('addSubject')}</button></div>)}</div>
+                      {tutorSelectedSubjects.length > 0 && (<div className="col-span-1 md:col-span-2 mt-4"><h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoClass')}</h3><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{tutorSelectedSubjects.map(item => { const subId = `${item.level}-${item.subject}`; return (<div key={subId} className="bg-white p-5 rounded-2xl shadow-sm border-2 border-dashed border-slate-200 hover:border-emerald-400 transition-colors text-center flex flex-col"><span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-3 mx-auto">{t(item.level)} - {t(item.subject)}</span><p className="text-xs text-slate-500 mb-4">{t('videoInstruction')}</p><div className="relative mt-auto"><input type="file" accept="video/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => { handleTutorVideoUpload(item, e.target.files[0]); e.target.value = null; }} /><button className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${tutorVideos[subId] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}><UploadCloud size={16} /> {tutorVideos[subId] ? 'Published to Feed!' : t('uploadVideo')}</button></div></div>)})}</div></div>)}
                     </>
                   )}
                 </div>
@@ -706,10 +1000,14 @@ export default function App() {
 
                   {/* Search Filter Bar */}
                   <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 mb-10">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                       <div className="relative">
                         <Search className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
                         <input type="text" placeholder="Search by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={`w-full py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} />
+                      </div>
+                      <div className="relative">
+                        <School className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
+                        <input type="text" placeholder="University name..." value={selectedUniversity} onChange={(e) => setSelectedUniversity(e.target.value)} className={`w-full py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} />
                       </div>
                       <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select>
                       <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select>
@@ -717,51 +1015,157 @@ export default function App() {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <button onClick={() => { document.getElementById('tutor-results')?.scrollIntoView({ behavior: 'smooth' }); }} className="flex-1 py-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors shadow-md">Search Now</button>
-                      <button onClick={() => { setSearchQuery(''); setSelectedLevel(''); setSelectedGroup(''); setSelectedSubject(''); }} className="px-6 py-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">Clear Filters</button>
+                      <button 
+                        onClick={handleFindNearby} 
+                        className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border-2 ${isNearbyActive ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}
+                      >
+                        {isLocating ? (
+                          <span className="flex items-center gap-2"><div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div> {t('detectingLoc')}</span>
+                        ) : (
+                          <><Navigation size={20} className={isNearbyActive ? 'text-emerald-500' : 'text-slate-400'} /> {t('findNearby')}</>
+                        )}
+                      </button>
+                      <button onClick={() => { setSearchQuery(''); setSelectedUniversity(''); setSelectedLevel(''); setSelectedGroup(''); setSelectedSubject(''); setIsNearbyActive(false); }} className="px-6 py-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">Clear Filters</button>
                     </div>
                   </div>
 
                   {/* Section 1: Best Rated Matches */}
-                  <h3 id="tutor-results" className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2"><Star className="text-amber-500 fill-amber-500" /> Best Rated Matches</h3>
+                  <h3 id="tutor-results" className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2"><Star className="text-amber-500 fill-amber-500" /> {isNearbyActive ? 'Nearby Top Rated' : 'Best Rated Matches'}</h3>
                   {topMatches.length === 0 ? (
-                    <div className="py-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed mb-10 font-bold">No 4.7+ rated tutors match your specific criteria.</div>
+                    <div className="py-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed mb-10 font-bold">No 4.7+ rated tutors match your criteria.</div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-12">
                       {topMatches.map(tutor => (
                           <div key={tutor.id} className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col group hover:shadow-xl transition-all cursor-pointer hover:-translate-y-1" onClick={() => setSelectedTutor(tutor)}>
-                            <div className="relative h-32 bg-blue-50"><img src={tutor.image} className="w-full h-full object-contain" /><div className="absolute top-2 right-2 bg-white/90 px-1.5 py-0.5 rounded-lg flex items-center gap-1 text-amber-500 shadow-sm"><Star size={12} fill="currentColor"/><span className="text-xs font-black">{tutor.rating}</span></div></div>
+                            <div className="relative h-32 bg-blue-50"><img src={tutor.image} className="w-full h-full object-cover" /><div className="absolute top-2 right-2 bg-white/90 px-1.5 py-0.5 rounded-lg flex items-center gap-1 text-amber-500 shadow-sm"><Star size={12} fill="currentColor"/><span className="text-xs font-black">{tutor.rating}</span></div></div>
                             <div className="p-4 flex-1 flex flex-col">
-                              <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{tutor.name}</h4>
+                              <h4 className="font-bold text-slate-800 text-sm line-clamp-1 flex items-center gap-1">{tutor.name} {tutor.isVerified && <ShieldCheck size={14} className="text-blue-500 fill-blue-50" />}</h4>
                               <p className="text-[10px] font-bold text-blue-600 mt-1 uppercase">{tutor.subjects.join(', ')}</p>
-                              <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between"><span className="text-[10px] font-bold text-slate-400">{tutor.locationName}</span><ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"/></div>
+                              <div className="mt-2 flex items-center gap-1 text-[10px] text-slate-400 font-bold"><MapPin size={10} className="text-emerald-500" /> {tutor.distance} {t('kmAway')}</div>
+                              <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between"><span className="text-[10px] font-bold text-slate-400 truncate w-24">{tutor.locationName}</span><ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"/></div>
                             </div>
-                          </div>
-                      ))}
-                    </div>
-                  )}
+                            </div>
+                            ))}
+                            </div>
+                            )}
 
-                  {/* Section 2: Suggested for You */}
-                  <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2"><ThumbsUp className="text-indigo-500" /> Suggested for You</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-20">
-                    {suggestions.map(tutor => (
-                        <div key={tutor.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col group hover:shadow-lg transition-all cursor-pointer opacity-90 hover:opacity-100" onClick={() => setSelectedTutor(tutor)}>
-                          <div className="relative h-28 bg-slate-50"><img src={tutor.image} className="w-full h-full object-contain opacity-80 group-hover:opacity-100" /></div>
-                          <div className="p-3 flex-1 flex flex-col">
-                            <h4 className="font-bold text-slate-700 text-xs line-clamp-1">{tutor.name}</h4>
+                            {/* Section 2: Suggested for You */}
+                            <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2"><ThumbsUp className="text-indigo-500" /> {isNearbyActive ? 'Suggested Nearby' : 'Suggested for You'}</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-20">
+                            {suggestions.map(tutor => (
+                            <div key={tutor.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col group hover:shadow-lg transition-all cursor-pointer opacity-90 hover:opacity-100" onClick={() => setSelectedTutor(tutor)}>
+                            <div className="relative h-28 bg-slate-50"><img src={tutor.image} className="w-full h-full object-cover" /></div>
+                            <div className="p-3 flex-1 flex flex-col">
+                            <h4 className="font-bold text-slate-700 text-xs line-clamp-1 flex items-center gap-1">{tutor.name} {tutor.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</h4>
                             <p className="text-[9px] font-semibold text-slate-400 mt-1">{tutor.subjects[0]} Expert</p>
-                            <div className="flex items-center gap-1 mt-2 text-slate-400"><Star size={10} fill="currentColor" /><span className="text-[10px] font-bold">{tutor.rating}</span></div>
-                          </div>
-                        </div>
-                    ))}
-                    {suggestions.length === 0 && <div className="col-span-full py-12 text-center text-slate-400 font-medium">No suggestions available right now.</div>}
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-1 text-slate-400"><Star size={10} fill="currentColor" /><span className="text-[10px] font-bold">{tutor.rating}</span></div>
+                              <div className="flex items-center gap-0.5 text-[9px] text-slate-400 font-bold"><MapPin size={10} className="text-emerald-500" /> {tutor.distance}km</div>
+                            </div>
+                            </div>
+                            </div>
+                            ))}                    {suggestions.length === 0 && <div className="col-span-full py-12 text-center text-slate-400 font-medium">No suggestions available right now.</div>}
                   </div>
                </div>
             )}
 
             {!selectedTutor && displayPage === 'demoClasses' && (
                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="bg-gradient-to-r from-rose-500 to-orange-500 p-8 rounded-3xl text-white shadow-lg mb-8"><h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Video size={32} /> {t('allDemoClasses')}</h2></div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">{globalVideos.slice(0,20).map(video => (<div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer" onClick={() => setActiveVideoModal(video)}><div className="relative h-44"><img src={video.thumbnail} className="w-full h-full object-cover" /><div className="absolute inset-0 flex items-center justify-center bg-black/20"><PlayCircle size={48} className="text-white opacity-80" /></div></div><div className="p-4"><h4>{video.title}</h4></div></div>))}</div>
+                  <div className="bg-gradient-to-r from-rose-500 to-orange-500 p-8 rounded-3xl text-white shadow-lg mb-8">
+                    <h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Video size={32} /> {t('allDemoClasses')}</h2>
+                    <p className="text-white/90 text-lg">Search by teacher, subject or find tutors near your current location.</p>
+                  </div>
+
+                  {/* Demo Search & Location Filter Bar */}
+                  <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                      <div className="relative">
+                        <Search className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
+                        <input 
+                          type="text" 
+                          placeholder="Search teacher or title..." 
+                          value={videoSearchQuery} 
+                          onChange={(e) => setVideoSearchQuery(e.target.value)} 
+                          className={`w-full py-3 rounded-xl border border-slate-200 focus:border-rose-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} 
+                        />
+                      </div>
+                      <select 
+                        value={videoLevelFilter} 
+                        onChange={(e) => setVideoLevelFilter(e.target.value)} 
+                        className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-rose-500 bg-white outline-none"
+                      >
+                        <option value="">All Levels</option>
+                        <option value="SSC">SSC</option>
+                        <option value="HSC">HSC</option>
+                      </select>
+                      <select 
+                        value={videoSubjectFilter} 
+                        onChange={(e) => setVideoSubjectFilter(e.target.value)} 
+                        className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-rose-500 bg-white outline-none"
+                      >
+                        <option value="">All Subjects</option>
+                        {Array.from(new Set(Object.values(curriculumData).flatMap(levels => Object.values(levels).flat()))).map(sub => (
+                          <option key={sub} value={sub}>{t(sub)}</option>
+                        ))}
+                      </select>
+                      <button 
+                        onClick={handleFindNearby} 
+                        className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border-2 ${isNearbyActive ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}
+                      >
+                        {isLocating ? (
+                          <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <><Navigation size={18} className={isNearbyActive ? 'text-emerald-500' : 'text-slate-400'} /> {t('findNearby')}</>
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex justify-end">
+                      <button 
+                        onClick={() => { setVideoSearchQuery(''); setVideoLevelFilter(''); setVideoSubjectFilter(''); setIsNearbyActive(false); }} 
+                        className="text-slate-500 text-sm font-bold hover:text-rose-500 transition-colors"
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  </div>
+
+                  {filteredVideos.length === 0 ? (
+                    <div className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                      <Video size={48} className="mx-auto text-slate-300 mb-4" />
+                      <h3 className="text-xl font-bold text-slate-400">No demo classes found.</h3>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                      {filteredVideos.map(video => (
+                        <div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}>
+                          <div className="relative h-44 bg-slate-900">
+                            <img src={video.thumbnail} className="w-full h-full object-cover opacity-70 group-hover:scale-105 group-hover:opacity-90 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                              <PlayCircle size={56} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all drop-shadow-xl" />
+                            </div>
+                            <span className="absolute top-3 left-3 bg-rose-600 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-sm uppercase">{t(video.subject)}</span>
+                            {isNearbyActive && (
+                              <span className="absolute bottom-3 left-3 bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                                <MapPin size={10} /> {video.tutorDistance} km
+                              </span>
+                            )}
+                            <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[10px] font-black px-2 py-0.5 rounded shadow-sm">{video.level}</span>
+                          </div>
+                          <div className="p-5 flex-1 flex flex-col">
+                            <h4 className="font-bold text-slate-800 line-clamp-2 text-lg leading-tight mb-2 group-hover:text-rose-600 transition-colors">{video.title}</h4>
+                            <p className="text-sm font-semibold text-slate-500 mb-4 hover:text-blue-600 hover:underline cursor-pointer w-max transition-colors flex items-center gap-1" onClick={(e) => { e.stopPropagation(); const tutor = mockTutors.find(t => t.id === video.tutorId); if(tutor) { setSelectedTutor(tutor); window.scrollTo(0,0); } }}>{video.tutorName} {mockTutors.find(t => t.id === video.tutorId)?.isVerified && <ShieldCheck size={14} className="text-blue-500 fill-blue-50" />}</p>
+                            <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">                              <div className="flex items-center gap-3 text-slate-500 text-[11px] font-bold">
+                                <span className="flex items-center gap-1"><Heart size={14} className="text-rose-500 fill-rose-500" /> {(video.reactionsLove||0)}</span>
+                                <span className="flex items-center gap-1"><ThumbsUp size={14} className="text-emerald-500 fill-emerald-500" /> {(video.reactionsGood||0)}</span>
+                                <span className="flex items-center gap-1"><ThumbsUp size={14} className="text-slate-400 fill-slate-400 rotate-180" /> {(video.reactionsNotGood||0)}</span>
+                              </div>
+                              <span className="text-rose-600 font-bold text-sm">Watch Now</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                </div>
             )}
 
@@ -782,10 +1186,92 @@ export default function App() {
                </div>
             )}
             
-            {!selectedTutor && displayPage === 'requests' && (
-               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500"><div className="bg-gradient-to-r from-emerald-600 to-teal-500 p-8 rounded-3xl text-white shadow-lg mb-8"><h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Briefcase size={32} /> Tuition Requests</h2></div><div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
-                     {tutorRequests.map(req => (<div key={req.id} className="flex justify-between p-4 border-b"><div><h4 className="font-bold">{req.studentName}</h4><p className="text-sm">{req.subject}</p></div><div className="flex gap-2"><button className="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold">Accept</button></div></div>))}
-                  </div></div>
+            {!selectedTutor && (displayPage === 'requests' || displayPage === 'messages') && (
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {!hasMembership ? (
+                    <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-slate-100 text-center max-w-2xl mx-auto mt-10">
+                      <div className="w-24 h-24 bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border-4 border-white"><Lock size={48} /></div>
+                      <h2 className="text-3xl font-black text-slate-800 mb-4">{t('premiumRequired') || 'Premium Subscription Required'}</h2>
+                      <p className="text-slate-600 mb-8 text-lg font-medium leading-relaxed">You must subscribe to view incoming tuition requests and direct messages from students and parents. Unlock your full potential today!</p>
+                      
+                      <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-8 text-left">
+                         <h3 className="font-bold text-slate-800 mb-4 text-center">Select Payment Method (৳999/month)</h3>
+                         <div className="grid grid-cols-2 gap-4">
+                            <button onClick={() => { alert('bKash Payment Successful!'); setHasMembership(true); }} className="p-4 bg-white border border-pink-500 rounded-xl hover:bg-pink-50 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group"><span className="font-black text-pink-600 group-hover:scale-110 transition-transform">bKash</span><span className="text-[10px] font-bold text-slate-400">Pay ৳999</span></button>
+                            <button onClick={() => { alert('Nagad Payment Successful!'); setHasMembership(true); }} className="p-4 bg-white border border-orange-500 rounded-xl hover:bg-orange-50 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group"><span className="font-black text-orange-600 group-hover:scale-110 transition-transform">Nagad</span><span className="text-[10px] font-bold text-slate-400">Pay ৳999</span></button>
+                            <button onClick={() => { alert('Rocket Payment Successful!'); setHasMembership(true); }} className="p-4 bg-white border border-purple-500 rounded-xl hover:bg-purple-50 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group"><span className="font-black text-purple-600 group-hover:scale-110 transition-transform">Rocket</span><span className="text-[10px] font-bold text-slate-400">Pay ৳999</span></button>
+                            <button onClick={() => { alert('Card Payment Successful!'); setHasMembership(true); }} className="p-4 bg-white border border-blue-500 rounded-xl hover:bg-blue-50 hover:shadow-md transition-all flex flex-col items-center justify-center gap-2 group"><span className="font-black text-blue-600 flex items-center gap-1 group-hover:scale-110 transition-transform"><CreditCard size={16}/> Visa/Mastercard</span><span className="text-[10px] font-bold text-slate-400">Pay ৳999</span></button>
+                         </div>
+                      </div>
+                      <p className="text-xs text-slate-400 font-medium">Secure local payment gateways. Instant activation.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {displayPage === 'requests' && (
+                        <div>
+                          <div className="bg-gradient-to-r from-emerald-600 to-teal-500 p-8 rounded-3xl text-white shadow-lg mb-8">
+                            <h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Briefcase size={32} /> Tuition Requests</h2>
+                          </div>
+                          <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                             {tutorRequests.length === 0 ? (
+                               <div className="text-center py-12 text-slate-400 font-bold border-2 border-dashed border-slate-200 rounded-2xl">No incoming tuition requests yet.</div>
+                             ) : (
+                               tutorRequests.map(req => (
+                                 <div key={req.id} className="flex justify-between items-center p-5 mb-4 rounded-2xl border border-slate-100 bg-slate-50 hover:shadow-md transition-shadow">
+                                   <div><h4 className="font-bold text-lg text-slate-800">{req.studentName}</h4><p className="text-sm font-medium text-slate-500">{req.level} - {req.subject}</p></div>
+                                   <div className="flex gap-3"><button onClick={() => setTutorRequests(prev => prev.filter(r => r.id !== req.id))} className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm transition-colors">Accept</button><button onClick={() => setTutorRequests(prev => prev.filter(r => r.id !== req.id))} className="bg-white text-red-500 border border-red-200 hover:bg-red-50 px-6 py-2.5 rounded-xl font-bold shadow-sm transition-colors">Decline</button></div>
+                                 </div>
+                               ))
+                             )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {displayPage === 'messages' && (
+                        <div className="relative bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden h-[600px] flex">
+                          <div className={`w-full md:w-1/3 border-r md:border-r border-slate-100 flex flex-col bg-white ${activeChat ? 'hidden md:flex' : 'flex'}`}>
+                             <div className="p-5 border-b border-slate-100 bg-slate-50 font-black text-slate-800 flex items-center gap-2 text-lg"><MessageSquare className="text-emerald-500"/> {t('messages')}</div>
+                             <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                               {mockChats.map(chat => (
+                                 <button key={chat.id} onClick={() => setActiveChat(chat)} className={`w-full text-left p-4 flex items-center gap-3 rounded-2xl transition-all ${activeChat?.id === chat.id ? 'bg-emerald-50 border border-emerald-100 shadow-sm' : 'hover:bg-slate-50 border border-transparent'}`}>
+                                   <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-bold text-lg rounded-full flex items-center justify-center shrink-0 shadow-inner">{chat.name.charAt(0)}</div>
+                                   <div className="flex-1 overflow-hidden"><h4 className="font-bold text-slate-800 text-sm truncate">{chat.name}</h4><p className="text-xs text-slate-500 truncate mt-1">{chat.lastMessage}</p></div>
+                                   {chat.unread > 0 && <span className="bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shrink-0 shadow-sm">{chat.unread}</span>}
+                                 </button>
+                               ))}
+                             </div>
+                          </div>
+                          <div className={`flex-1 flex flex-col bg-slate-50/50 ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
+                             {activeChat ? (
+                               <>
+                                 <div className="p-4 bg-white border-b border-slate-100 flex items-center gap-3 shadow-sm z-10 relative">
+                                   <button onClick={() => setActiveChat(null)} className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-full bg-slate-50"><ChevronLeft size={20}/></button>
+                                   <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-bold rounded-full flex items-center justify-center shadow-inner">{activeChat.name.charAt(0)}</div>
+                                   <h4 className="font-bold text-slate-800">{activeChat.name}</h4>
+                                 </div>
+                                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                                   <div className="flex flex-col items-center justify-center h-full text-slate-400 italic text-sm">Select a chat to start messaging</div>
+                                 </div>
+                                 <div className="p-4 bg-white border-t border-slate-100">
+                                   <div className="flex gap-2">
+                                     <input type="text" placeholder={t('typeMessage')} className="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 rounded-xl px-4 py-3 outline-none transition-all text-sm"/>
+                                     <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl shadow-md transition-colors"><Send size={18}/></button>
+                                   </div>
+                                 </div>
+                               </>
+                             ) : (
+                               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                                  <MessageCircle size={64} className="mb-4 text-slate-200" />
+                                  <h3 className="text-xl font-bold text-slate-500 mb-2">Your Messages</h3>
+                                  <p className="text-sm">Select a conversation from the list to view your messages and reply to students.</p>
+                               </div>
+                             )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+               </div>
             )}
 
             {!selectedTutor && displayPage === 'support' && (
@@ -799,9 +1285,183 @@ export default function App() {
             )}
             
             {!selectedTutor && displayPage === 'updateProfile' && (
-               <div className="bg-white p-8 rounded-3xl shadow-xl animate-in fade-in">
-                  <h3 className="text-2xl font-bold mb-6">Update Profile</h3>
-                  <button onClick={() => { setIsProfileComplete(true); setActivePage('dashboard'); }} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">Simulate Profile Completion</button>
+               <div className="bg-white p-8 rounded-3xl shadow-xl animate-in fade-in max-w-4xl mx-auto border border-slate-100">
+                  <div className="flex items-center justify-between mb-2 border-b border-slate-100 pb-4">
+                    <h3 className="text-3xl font-black text-slate-800 flex items-center gap-3">
+                      <User size={32} className={roleConfig[role].text} /> {t('updateProfile')}
+                    </h3>
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${roleConfig[role].bgLight} ${roleConfig[role].text}`}>
+                      {roleConfig[role].label}
+                    </span>
+                  </div>
+
+                  {/* Progression Bar */}
+                  <div className="mb-10 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-inner">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-black text-slate-500 uppercase tracking-widest">{t('profileProgress')}</span>
+                      <span className={`text-xl font-black ${profileProgress === 100 ? 'text-emerald-600' : 'text-blue-600'}`}>{profileProgress}%</span>
+                    </div>
+                    <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                      <div 
+                        className={`h-full transition-all duration-1000 ease-out rounded-full shadow-lg ${profileProgress === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' : 'bg-gradient-to-r from-blue-400 to-indigo-600'}`} 
+                        style={{ width: `${profileProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="mt-3 text-xs font-bold text-slate-400 italic">
+                      {profileProgress < 100 ? 'Complete your profile to increase trust and visibility.' : 'Great job! Your profile is 100% complete.'}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Basic Info (Common) */}
+                    <div className="space-y-6">
+                      <h4 className="font-bold text-slate-400 uppercase text-xs tracking-widest mb-4">Personal Information</h4>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('name')}</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('email')}</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('mobile')}</label>
+                        <input type="text" name="mobile" value={formData.mobile} onChange={handleInputChange} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-medium" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('address')}</label>
+                        <textarea name="address" value={formData.address} onChange={handleInputChange} rows="3" className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-medium resize-none"></textarea>
+                      </div>
+                    </div>
+
+                    {/* Role Specific Info */}
+                    <div className="space-y-6">
+                      <h4 className="font-bold text-slate-400 uppercase text-xs tracking-widest mb-4">Professional Details</h4>
+                      
+                      {role === 'tutor' && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">{t('university')}</label>
+                            <input type="text" name="university" value={tutorProfile.university} onChange={(e) => handleProfileChange(e, setTutorProfile)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 transition-all font-medium" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">{t('experience')}</label>
+                            <input type="text" name="prevTuitions" value={tutorProfile.prevTuitions} onChange={(e) => handleProfileChange(e, setTutorProfile)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 transition-all font-medium" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">{t('askingPrice')}</label>
+                            <input type="text" name="askingPrice" value={tutorProfile.askingPrice} onChange={(e) => handleProfileChange(e, setTutorProfile)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 transition-all font-medium" />
+                          </div>
+                        </>
+                      )}
+
+                      {(role === 'student' || role === 'guardian') && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">{t('institution')}</label>
+                            <input type="text" name="institution" value={studentProfile.institution} onChange={(e) => handleProfileChange(e, setStudentProfile)} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 transition-all font-medium" />
+                          </div>
+                        </>
+                      )}
+
+                      <div className="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200 text-center">
+                        <div className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center border-2 border-slate-100 shadow-sm">
+                          <UploadCloud size={32} className="text-slate-300" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-500 mb-4">{t('profilePic')}</p>
+                        <button className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${roleConfig[role].color} text-white`}>Upload Photo</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Security Verification Section */}
+                  <div className="mt-10 pt-8 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-6">
+                      <h4 className="font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight"><ShieldCheck className="text-blue-600" /> {t('verificationTitle')}</h4>
+                      {verificationStep === 'verified' && <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><CheckCircle2 size={12}/> Verified by AI</span>}
+                    </div>
+                    
+                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-inner">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-4">
+                           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Step 1: ID Card (OCR)</p>
+                           <div className="relative h-40 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden shadow-sm group hover:border-blue-300 transition-colors">
+                              {idFront ? (
+                                <img src={URL.createObjectURL(idFront)} className="w-full h-full object-cover" />
+                              ) : (
+                                <><IdCard size={32} className="text-slate-300 mb-2 group-hover:scale-110 transition-transform" /><p className="text-[10px] font-bold text-slate-400">Upload ID Front</p></>
+                              )}
+                              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setIdFront(e.target.files[0])} />
+                           </div>
+                           <button 
+                             onClick={runSecurityVerification} 
+                             disabled={isVerifying || verificationStep === 'verified' || !idFront}
+                             className={`w-full py-3 rounded-xl text-xs font-black transition-all ${!idFront || isVerifying || verificationStep === 'verified' ? 'bg-slate-200 text-slate-400' : 'bg-blue-600 text-white shadow-lg hover:shadow-xl active:scale-95'}`}
+                           >
+                             {isVerifying && verificationStep === 'scanning' ? (
+                               <span className="flex items-center justify-center gap-2"><div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div> {t('verifying')}</span>
+                             ) : t('startOcr')}
+                           </button>
+                        </div>
+
+                        <div className={`space-y-4 transition-opacity duration-500 ${verificationStep === 'none' && !isVerifying ? 'opacity-40' : 'opacity-100'}`}>
+                           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Step 2: Live Selfie</p>
+                           <div className="relative h-40 bg-white rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden shadow-sm group hover:border-indigo-300 transition-colors">
+                              {selfiePhoto ? (
+                                <img src={URL.createObjectURL(selfiePhoto)} className="w-full h-full object-cover" />
+                              ) : (
+                                <><User size={32} className="text-slate-300 mb-2 group-hover:scale-110 transition-transform" /><p className="text-[10px] font-bold text-slate-400">Take Live Selfie</p></>
+                              )}
+                              <input type="file" capture="user" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setSelfiePhoto(e.target.files[0])} />
+                           </div>
+                           <button disabled className="w-full py-3 rounded-xl text-xs font-black bg-slate-200 text-slate-400 uppercase">{t('takeSelfie')}</button>
+                        </div>
+
+                        <div className="space-y-4">
+                           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">AI Status</p>
+                           <div className="h-40 bg-white rounded-2xl border border-slate-200 p-4 flex flex-col items-center justify-center text-center shadow-inner relative overflow-hidden">
+                              {verificationStep === 'none' && !isVerifying && <><AlertCircle size={32} className="text-slate-200 mb-2" /><p className="text-xs font-black text-slate-300 uppercase">Awaiting ID...</p></>}
+                              {isVerifying && (
+                                <div className="flex flex-col items-center gap-4 animate-in zoom-in-95">
+                                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest animate-pulse">{verificationStep === 'scanning' ? t('ocrProcess') : t('faceMatchProcess')}</p>
+                                    <div className="w-32 h-1 bg-slate-100 rounded-full overflow-hidden mx-auto"><div className="h-full bg-blue-500 animate-[loading_2s_ease-in-out_infinite]"></div></div>
+                                  </div>
+                                </div>
+                              )}
+                              {verificationStep === 'verified' && (
+                                <div className="animate-in slide-in-from-bottom-2 duration-500">
+                                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner"><CheckCircle2 size={32} /></div>
+                                  <p className="text-sm font-black text-emerald-600">{t('faceMatchSuccess')}</p>
+                                  <div className="mt-2 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Extracted Identity</p><p className="text-xs font-bold text-slate-700">{ocrData.idNumber}</p></div>
+                                </div>
+                              )}
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => { 
+                        setIsProfileComplete(true); 
+                        alert(t('profileUpdatedAlert')); 
+                        setActivePage('dashboard'); 
+                        window.scrollTo(0,0); 
+                      }} 
+                      className={`flex-1 py-4 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all ${roleConfig[role].color}`}
+                    >
+                      {t('saveProfile')}
+                    </button>
+                    <button 
+                      onClick={() => { setActivePage('dashboard'); window.scrollTo(0,0); }} 
+                      className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                </div>
             )}
 
