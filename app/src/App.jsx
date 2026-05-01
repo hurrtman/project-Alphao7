@@ -25,7 +25,7 @@ const translations = {
     dashboardPage: 'Dashboard', allDemoClasses: 'All Tutorials',
     premiumRequired: 'Premium Membership Required', messagesLockedDesc: 'Upgrade to unlock direct messaging.', upgradeNow: 'Upgrade', typeMessage: 'Type a message...',
     profileUpdatedAlert: 'Profile updated!', keepProfileUpdated: 'Keep your profile updated.', allTutors: 'All Teachers', findTutorDesc: 'Search our expert educators.',
-    supportTitle: 'Support System', supportDesc: 'We are here 24/7.', contactAdmin: 'Message Admin', subjectLabel: 'Subject', messageLabel: 'Message', sendMsgBtn: 'Send', contactInfo: 'Contact Info', followUs: 'Follow Us',
+    supportTitle: 'Support System', supportDesc: 'We are here 24/7.', contactAdmin: 'Message Admin', subjectLabel: 'Subject', messageLabel: 'Message', sendMsgBtn: 'Send', contactInfo: 'Contact Info', followUs: 'Follow Us', reportTeacher: 'Report Teacher',
     findNearby: 'Find Nearby Teachers', detectingLoc: 'Detecting Location...', kmAway: 'km away',
     bookMe: 'Request Tuition', moreDetails: 'More Details', currentUniversity: 'Current University', achievementsLife: 'Achievements & Awards', messageTutor: 'Message Teacher',
     myBookings: 'My Tuitions', pending: 'Pending', accepted: 'Active', totalEarnings: 'Total Earnings', activeStudents: 'Active Students', reqActions: 'Actions', accept: 'Accept', decline: 'Decline', currentBookings: 'Current Tuitions', suggestedTutors: 'Suggested Teachers',
@@ -52,7 +52,7 @@ const translations = {
     dashboardPage: 'ড্যাশবোর্ড', allDemoClasses: 'সকল টিউটোরিয়াল',
     premiumRequired: 'প্রিমিয়াম প্রয়োজন', messagesLockedDesc: 'মেসেজ পড়তে আপগ্রেড করুন।', upgradeNow: 'আপগ্রেড', typeMessage: 'মেসেজ লিখুন...',
     profileUpdatedAlert: 'প্রোফাইল আপডেট হয়েছে!', keepProfileUpdated: 'প্রোফাইল আপডেট রাখুন।', allTutors: 'সকল শিক্ষক', findTutorDesc: 'বিশেষজ্ঞ শিক্ষকদের খুঁজুন।',
-    supportTitle: 'সাপোর্ট', supportDesc: 'আমরা ২৪/৭ আপনার সাথে আছি।', contactAdmin: 'মেসেজ দিন', subjectLabel: 'বিষয়', messageLabel: 'মেসেজ', sendMsgBtn: 'পাঠান', contactInfo: 'যোগাযোগ', followUs: 'ফলো করুন',
+    supportTitle: 'সাপোর্ট', supportDesc: 'আমরা ২৪/৭ আপনার সাথে আছি।', contactAdmin: 'মেসেজ দিন', subjectLabel: 'বিষয়', messageLabel: 'মেসেজ', sendMsgBtn: 'পাঠান', contactInfo: 'যোগাযোগ', followUs: 'ফলো করুন', reportTeacher: 'শিক্ষকের বিরুদ্ধে রিপোর্ট',
     findNearby: 'নিকটবর্তী শিক্ষক খুঁজুন', detectingLoc: 'লোকেশন শনাক্ত হচ্ছে...', kmAway: 'কিমি দূরে',
     bookMe: 'টিউশন রিকোয়েস্ট', moreDetails: 'বিস্তারিত', currentUniversity: 'বর্তমান বিশ্ববিদ্যালয়', achievementsLife: 'পুরস্কার', messageTutor: 'মেসেজ দিন',
     myBookings: 'আমার টিউশন', pending: 'অপেক্ষমান', accepted: 'সক্রিয়', totalEarnings: 'মোট আয়', activeStudents: 'সক্রিয় শিক্ষার্থী', reqActions: 'পদক্ষেপ', accept: 'গ্রহণ', decline: 'বাতিল', currentBookings: 'বর্তমান টিউশন', suggestedTutors: 'প্রস্তাবিত শিক্ষক',
@@ -165,10 +165,10 @@ const mockChats = [
 const generateId = (prefix = '') => `${prefix}${Math.random().toString(36).substring(2, 11)}`;
 
 const FloatingBackground = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-purple-200/30 rounded-full blur-[120px] animate-mesh"></div>
-    <div className="absolute top-[20%] -right-[10%] w-[35%] h-[35%] bg-indigo-200/20 rounded-full blur-[100px] animate-mesh" style={{ animationDelay: '-5s' }}></div>
-    <div className="absolute -bottom-[10%] left-[20%] w-[45%] h-[45%] bg-pink-100/30 rounded-full blur-[140px] animate-mesh" style={{ animationDelay: '-10s' }}></div>
+  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 bg-[#f8fafc]">
+    <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full opacity-60 animate-mesh" style={{ background: 'radial-gradient(circle, rgba(233,213,255,0.8) 0%, rgba(233,213,255,0) 70%)' }}></div>
+    <div className="absolute top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full opacity-50 animate-mesh" style={{ animationDelay: '-5s', background: 'radial-gradient(circle, rgba(199,210,254,0.8) 0%, rgba(199,210,254,0) 70%)' }}></div>
+    <div className="absolute -bottom-[20%] left-[20%] w-[70%] h-[70%] rounded-full opacity-50 animate-mesh" style={{ animationDelay: '-10s', background: 'radial-gradient(circle, rgba(252,231,243,0.8) 0%, rgba(252,231,243,0) 70%)' }}></div>
   </div>
 );
 
@@ -228,7 +228,8 @@ export default function App() {
   const [selectedUniversity, setSelectedUniversity] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [selectedLocation, setSelectedLocation] = useState('');
+
   // Video Search States
   const [videoSearchQuery, setVideoSearchQuery] = useState('');
   const [videoLevelFilter, setVideoLevelFilter] = useState('');
@@ -248,6 +249,8 @@ export default function App() {
   const [bookingModalTutor, setBookingModalTutor] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [paymentModalData, setPaymentModalData] = useState(null);
+  const [reportModalData, setReportModalData] = useState(null);
+  const [reportReason, setReportReason] = useState('');
   const [isProfileComplete, setIsProfileComplete] = useState(false);
   const [tutorProfile, setTutorProfile] = useState({ 
     certName: '', 
@@ -340,8 +343,9 @@ export default function App() {
       const nameMatch = searchQuery ? t.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
       const uniMatch = selectedUniversity ? t.university.toLowerCase().includes(selectedUniversity.toLowerCase()) : true;
       const genderMatch = selectedGender ? t.gender === selectedGender : true;
+      const locMatch = selectedLocation ? t.locationName.toLowerCase().includes(selectedLocation.toLowerCase()) : true;
       
-      if (!nameMatch || !uniMatch || !genderMatch) return false;
+      if (!nameMatch || !uniMatch || !genderMatch || !locMatch) return false;
 
       if (!selectedLevel && !selectedGroup && !selectedSubject) return true;
 
@@ -614,7 +618,7 @@ export default function App() {
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white relative"><button onClick={() => setBookingModalTutor(null)} className="absolute top-4 right-4 p-1.5 bg-white/20 hover:bg-white/40 rounded-full"><X size={20}/></button><h2 className="text-2xl font-black mb-1">{t('bookMe')}</h2><p className="text-white/80 font-medium">{bookingModalTutor.name} • {t(bookingModalTutor.subjects[0])}</p></div>
                 <div className="p-6"><h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Clock size={20} className="text-blue-500"/> {t('availableSlots')}</h3>
                    <div className="space-y-3 mb-8">{bookingModalTutor.slots?.map(slot => (<label key={slot} className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedSlot === slot ? 'border-blue-500 bg-blue-50' : 'border-slate-100 hover:border-blue-200 bg-slate-50'}`}><span className={`font-bold ${selectedSlot === slot ? 'text-blue-700' : 'text-slate-700'}`}>{slot}</span><input type="radio" name="slot" value={slot} checked={selectedSlot === slot} onChange={() => setSelectedSlot(slot)} className="w-5 h-5 accent-blue-600" /></label>))}</div>
-                   <button onClick={handleConfirmBooking} className="w-full py-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-lg hover:from-indigo-600 hover:to-violet-600 transition-all duration-500 shadow-xl shadow-slate-200 hover:shadow-indigo-100 flex items-center justify-center gap-2 active:scale-95"><CheckSquare size={20}/> {t('confirmBooking')}</button>
+                   <button onClick={handleConfirmBooking} className="w-full py-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-lg hover:from-indigo-600 hover:to-violet-600 transition-all duration-300 shadow-xl shadow-slate-200 hover:shadow-indigo-100 flex items-center justify-center gap-2 active:scale-95"><CheckSquare size={20}/> {t('confirmBooking')}</button>
                 </div>
              </div>
           </div>
@@ -640,10 +644,38 @@ export default function App() {
           </div>
         )}
 
+        {reportModalData && (
+          <div className="fixed inset-0 bg-black/60 z-[120] flex items-center justify-center p-4 animate-in fade-in duration-200">
+             <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100">
+                <div className="bg-gradient-to-r from-red-600 to-rose-600 p-6 text-white relative">
+                  <button onClick={() => { setReportModalData(null); setReportReason(''); }} className="absolute top-4 right-4 p-1.5 bg-white/20 hover:bg-white/40 rounded-full"><X size={20}/></button>
+                  <h2 className="text-2xl font-black mb-1 flex items-center gap-2"><AlertCircle size={24} /> Report {reportModalData.role}</h2>
+                  <p className="text-white/80 font-medium">Reporting {reportModalData.name}</p>
+                </div>
+                <div className="p-6">
+                   <label className="block text-sm font-bold text-slate-700 mb-2">Reason for reporting</label>
+                   <textarea 
+                     rows="5" 
+                     value={reportReason}
+                     onChange={(e) => setReportReason(e.target.value)}
+                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 transition-all font-medium resize-none mb-6" 
+                     placeholder={`Please describe why you are reporting this ${reportModalData.role.toLowerCase()}...`}
+                   ></textarea>
+                   <button onClick={() => { 
+                     if(!reportReason.trim()) return alert("Please enter a reason.");
+                     alert("Report submitted successfully. Our team will review it."); 
+                     setReportModalData(null);
+                     setReportReason('');
+                   }} className="w-full py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-red-100 hover:-translate-y-1 active:scale-95 transition-all">Submit Report</button>
+                </div>
+             </div>
+          </div>
+        )}
+
         <div className="relative z-10 min-h-screen flex flex-col">
-          <nav className="bg-white/70 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.03)] border-b border-white/50 px-6 py-4 flex items-center justify-between sticky top-0 z-40 transition-all duration-300">
+          <nav className="bg-white/70 backdrop-blur-sm shadow-[0_2px_20px_rgba(0,0,0,0.03)] border-b border-white/50 px-6 py-4 flex items-center justify-between sticky top-0 z-40 transition-all duration-300">
             <div className="flex items-center gap-4">
-              <button onClick={() => setIsMenuOpen(true)} className="p-2.5 hover:bg-white/80 rounded-2xl transition-all active:scale-90 shadow-sm border border-slate-100 lg:hidden"><Menu size={22} className="text-slate-800" /></button>
+              <button onClick={() => setIsMenuOpen(true)} className="p-2.5 hover:bg-white/80 rounded-2xl transition-all active:scale-90 shadow-sm border border-slate-100"><Menu size={22} className="text-slate-800" /></button>
               <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setActivePage('dashboard')}>
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-300">
                   <GraduationCap className="text-white" size={24} />
@@ -697,7 +729,7 @@ export default function App() {
           </nav>
 
           {isMenuOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity duration-300" onClick={() => setIsMenuOpen(false)}></div>}
-          <div className={`fixed top-0 ${dir === 'rtl' ? 'right-0' : 'left-0'} h-full w-80 bg-white/80 backdrop-blur-2xl shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMenuOpen ? 'translate-x-0' : (dir === 'rtl' ? 'translate-x-full' : '-translate-x-full')}`}>
+          <div className={`fixed top-0 ${dir === 'rtl' ? 'right-0' : 'left-0'} h-full w-80 bg-white/80 backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isMenuOpen ? 'translate-x-0' : (dir === 'rtl' ? 'translate-x-full' : '-translate-x-full')}`}>
             <div className="p-6 border-b border-white/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -716,6 +748,8 @@ export default function App() {
                     <button onClick={() => { setActivePage('adminUsers'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'adminUsers' ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Users size={20} /> <span>{t('adminUsers')}</span></button>
                     <button onClick={() => { setActivePage('adminPayments'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'adminPayments' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><CreditCard size={20} /> <span>{t('adminPayments')}</span></button>
                     <button onClick={() => { setActivePage('adminReports'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'adminReports' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Activity size={20} /> <span>{t('adminReports')}</span></button>
+                    <button onClick={() => { setActivePage('sysSettings'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'sysSettings' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Activity size={20} /> <span>{t('sysSettings')}</span></button>
+                    <button onClick={() => { setActivePage('serverMgmt'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'serverMgmt' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Server size={20} /> <span>{t('serverMgmt')}</span></button>
                   </>
                 )}
                 {role === 'tutor' && (
@@ -733,6 +767,7 @@ export default function App() {
                     <button onClick={() => { setActivePage('demoClasses'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'demoClasses' ? 'bg-rose-600 text-white shadow-lg shadow-rose-100' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Video size={20} /> <span>{t('allDemoClasses')}</span></button>
                     <button onClick={() => { setActivePage('findTutor'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'findTutor' ? 'bg-violet-600 text-white shadow-lg shadow-violet-100' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><Search size={20} /> <span>{t('findTutor')}</span></button>
                     <button onClick={() => { setActivePage('updateProfile'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'updateProfile' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><User size={20} /> <span>{t('updateProfile')}</span></button>
+                    <button onClick={() => { setActivePage('reportTeacher'); setIsMenuOpen(false); window.scrollTo(0,0); }} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold text-left transition-all ${activePage === 'reportTeacher' ? 'bg-red-500 text-white shadow-lg shadow-red-100' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}><AlertCircle size={20} /> <span>{t('reportTeacher')}</span></button>
                   </>
                 )}
                 <div className="my-4 border-t border-white/50"></div>
@@ -799,8 +834,9 @@ export default function App() {
                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 sm:col-span-2"><p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('achievementsLife')}</p><p className="font-semibold text-slate-700 flex items-start gap-2"><Award size={18} className="text-amber-500 shrink-0 mt-0.5"/> {selectedTutor.achievements}</p></div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-                        <button onClick={() => handleInitiateBooking(selectedTutor)} className="flex-1 py-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-lg hover:from-indigo-600 hover:to-violet-600 transition-all duration-500 shadow-xl shadow-slate-200 hover:shadow-indigo-100 flex items-center justify-center gap-2 active:scale-95"><CheckSquare size={20}/> {t('bookMe')}</button>
+                        <button onClick={() => handleInitiateBooking(selectedTutor)} className="flex-1 py-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black text-lg hover:from-indigo-600 hover:to-violet-600 transition-all duration-300 shadow-xl shadow-slate-200 hover:shadow-indigo-100 flex items-center justify-center gap-2 active:scale-95"><CheckSquare size={20}/> {t('bookMe')}</button>
                         <button onClick={() => alert("Message interface opened!")} className="flex-1 py-4 bg-indigo-50 text-indigo-700 rounded-2xl font-bold text-lg hover:bg-indigo-100 transition-all flex items-center justify-center gap-2 border border-indigo-100 hover:-translate-y-1 hover:shadow-md"><MessageSquare size={20}/> {t('messageTutor')}</button>
+                        <button onClick={() => setReportModalData({ userId: selectedTutor.id, name: selectedTutor.name, role: 'Teacher' })} className="flex-none py-4 px-6 bg-red-50 text-red-600 rounded-2xl font-bold text-lg hover:bg-red-100 transition-all flex items-center justify-center gap-2 border border-red-100 hover:-translate-y-1 hover:shadow-md" title="Report Teacher"><AlertCircle size={20}/></button>
                       </div>
                     </div>
                   </div>
@@ -841,7 +877,7 @@ export default function App() {
                       <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 col-span-1 md:col-span-2"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Search className="text-blue-500" /> {t('findTutor')}</h3><div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"><select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')}</option><option value="HSC">{t('HSC')}</option></select><select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup} className="flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select><select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} className="flex-1 py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select></div>{selectedSubject && <button onClick={() => { setActivePage('findTutor'); window.scrollTo(0,0); }} className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold">{t('search')}</button>}</div>
                       <div className="col-span-1 md:col-span-2 mt-4"><h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoFeed')}</h3><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                           {globalVideos.slice(0,6).map(video => (
-<div key={video.id} className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}><div className="relative h-40 bg-slate-200"><img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /><div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center"><PlayCircle size={48} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" /></div><span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2 py-1 rounded-md">{t(video.subject)}</span></div><div className="p-4 flex-1 flex flex-col"><h4 className="font-bold text-slate-800 line-clamp-1">{video.title}</h4><p onClick={(e) => { e.stopPropagation(); const tutor = mockTutors.find(t => t.id === video.tutorId); if(tutor) { setSelectedTutor(tutor); window.scrollTo(0,0); } }} className="text-sm text-slate-500 mb-4 hover:text-blue-600 hover:underline cursor-pointer w-max transition-colors flex items-center gap-1">{video.tutorName} {mockTutors.find(t => t.id === video.tutorId)?.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</p><div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100"><div className="flex items-center gap-2 text-slate-500 text-[10px]"><span className="flex items-center gap-1 font-bold"><Heart size={12} className="text-rose-500 fill-rose-500" /> {video.reactionsLove}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-emerald-500 fill-emerald-500" /> {video.reactionsGood}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-slate-400 fill-slate-400 rotate-180" /> {video.reactionsNotGood}</span></div><span className="text-blue-600 font-semibold text-xs">{t('watchNow')}</span></div></div></div>))}</div></div>
+<div key={video.id} className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}><div className="relative h-40 bg-slate-200"><img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /><div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center"><PlayCircle size={48} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" /></div><span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2 py-1 rounded-md">{t(video.subject)}</span></div><div className="p-4 flex-1 flex flex-col"><h4 className="font-bold text-slate-800 line-clamp-1">{video.title}</h4><p onClick={(e) => { e.stopPropagation(); const tutor = mockTutors.find(t => t.id === video.tutorId); if(tutor) { setSelectedTutor(tutor); window.scrollTo(0,0); } }} className="text-sm text-slate-500 mb-4 hover:text-blue-600 hover:underline cursor-pointer w-max transition-colors flex items-center gap-1">{video.tutorName} {mockTutors.find(t => t.id === video.tutorId)?.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</p><div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100"><div className="flex items-center gap-2 text-slate-500 text-[10px]"><span className="flex items-center gap-1 font-bold"><Heart size={12} className="text-rose-500 fill-rose-500" /> {video.reactionsLove}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-emerald-500 fill-emerald-500" /> {video.reactionsGood}</span><span className="flex items-center gap-1 font-bold"><ThumbsUp size={12} className="text-slate-400 fill-slate-400 rotate-180" /> {video.reactionsNotGood}</span></div><span className="text-blue-600 font-semibold text-xs">{t('watchNow')}</span></div></div></div>))}</div></div>
                       
                       <div className="col-span-1 md:col-span-2 mt-4 relative">
                         <div className="flex items-center justify-between mb-6">
@@ -857,7 +893,7 @@ export default function App() {
                             return (
                               <div key={tutor.id} className="min-w-[280px] sm:min-w-[300px] snap-center shrink-0 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col group hover:shadow-xl transition-shadow">
                                 <div className="relative h-40 w-full bg-slate-900 overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveVideoModal(tutorVideoData || globalVideos[0]); }}>
-                                  <img src={tutorVideoData?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-80 transition-all duration-500" />
+                                  <img src={tutorVideoData?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-80 transition-all duration-300" />
                                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                                   <div className={`absolute bottom-3 ${dir === 'rtl' ? 'right-3' : 'left-3'} right-16 flex flex-col items-start gap-1`}>
                                     <span className="text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded shadow-sm">{t(tutorVideoData?.subject || tutor.subjects[0])}</span>
@@ -890,7 +926,7 @@ export default function App() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                           {mockTutors.slice(20, 24).map(tutor => (
-                            <div key={tutor.id} className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => setSelectedTutor(tutor)}>
+                            <div key={tutor.id} className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 p-4 hover:shadow-md transition-all cursor-pointer" onClick={() => setSelectedTutor(tutor)}>
                               <div className="flex items-center gap-3 mb-3">
                                 <img src={tutor.image} className="w-12 h-12 rounded-full border border-slate-100" />
                                 <div>
@@ -913,7 +949,7 @@ export default function App() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                           {globalVideos.slice(6, 10).map(video => (
-                            <div key={video.id} className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-md transition-all cursor-pointer group" onClick={() => setActiveVideoModal(video)}>
+                            <div key={video.id} className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-md transition-all cursor-pointer group" onClick={() => setActiveVideoModal(video)}>
                               <div className="relative h-28 bg-slate-100">
                                 <img src={video.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                                 <div className="absolute inset-0 flex items-center justify-center"><PlayCircle size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" /></div>
@@ -932,22 +968,22 @@ export default function App() {
                     <>
                       {/* Quick Stats Row */}
                       <div className="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                        <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-lg transition-all group hover:-translate-y-1">
+                        <div className="bg-white/60 backdrop-blur-sm p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group hover:-translate-y-1">
                           <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Briefcase size={28}/></div>
                           <div><p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Total Requests</p><p className="text-3xl font-black text-slate-800">{tutorRequests.length}</p></div>
                         </div>
-                        <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-lg transition-all group hover:-translate-y-1">
+                        <div className="bg-white/60 backdrop-blur-sm p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group hover:-translate-y-1">
                           <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Heart size={28}/></div>
                           <div><p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Video Reach</p><p className="text-3xl font-black text-slate-800">{globalVideos.filter(v => v.tutorId === 99).reduce((acc, v) => acc + (v.reactionsLove||0) + (v.reactionsGood||0), 0)}</p></div>
                         </div>
-                        <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-lg transition-all group hover:-translate-y-1">
+                        <div className="bg-white/60 backdrop-blur-sm p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 flex items-center gap-4 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 group hover:-translate-y-1">
                           <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform"><Clock size={28}/></div>
                           <div><p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Active Slots</p><p className="text-3xl font-black text-slate-800">{tutorProfile.slots?.length || 0}</p></div>
                         </div>
                       </div>
 
                       {/* Time Slots Management */}
-                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-4">
+                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-sm p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-4">
                         <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3"><Clock className="text-indigo-500" /> Manage Available Slots</h3>
                         <div className="flex flex-wrap gap-3 mb-6">
                           {tutorProfile.slots?.map((slot, idx) => (
@@ -970,7 +1006,7 @@ export default function App() {
                       </div>
 
                       {/* Video Performance */}
-                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-6">
+                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-sm p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-6">
                         <div className="flex items-center justify-between mb-8">
                           <h3 className="text-xl font-black text-slate-800 flex items-center gap-3"><Activity className="text-rose-500" /> Video Performance</h3>
                           <span className="text-[10px] font-black text-slate-400 bg-white/50 px-3 py-1.5 rounded-full border border-white/50 uppercase tracking-widest">Reach & Engagement</span>
@@ -997,7 +1033,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-8 transition-all hover:shadow-lg">
+                      <div className="col-span-1 md:col-span-2 bg-white/60 backdrop-blur-sm p-8 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 mt-8 transition-all hover:shadow-lg">
                         <h3 className="text-2xl font-black text-slate-800 mb-8 flex items-center gap-3"><BookOpen className="text-emerald-500" /> {t('teachingSubjects')}</h3>
                         <div className="flex gap-4 mb-8 flex-wrap">
                           {tutorSelectedSubjects.length === 0 && <span className="text-slate-400 italic font-black text-xs uppercase tracking-widest bg-white/40 px-5 py-2.5 rounded-2xl border border-white/60 shadow-inner">No subjects added yet.</span>}
@@ -1050,7 +1086,7 @@ export default function App() {
                             {tutorSelectedSubjects.map(item => { 
                               const subId = `${item.level}-${item.subject}`; 
                               return (
-                                <div key={subId} className="bg-white/60 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-2 border-dashed border-white/80 hover:border-emerald-400 transition-all text-center flex flex-col group hover:-translate-y-1">
+                                <div key={subId} className="bg-white/60 backdrop-blur-sm p-6 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-2 border-dashed border-white/80 hover:border-emerald-400 transition-all text-center flex flex-col group hover:-translate-y-1">
                                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-4 py-2 rounded-full mb-6 mx-auto tracking-widest uppercase shadow-sm">{t(item.level)} - {t(item.subject)}</span>
                                   <p className="text-[11px] text-slate-500 mb-8 font-medium leading-relaxed italic">{t('videoInstruction')}</p>
                                   <div className="relative mt-auto">
@@ -1081,29 +1117,33 @@ export default function App() {
 
                   {/* Search Filter Bar */}
                   <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 mb-10">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
-                      <div className="relative">
+                    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mb-4">
+                      <div className="relative md:col-span-2">
                         <Search className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
                         <input type="text" placeholder="Search by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={`w-full py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} />
                       </div>
-                      <div className="relative">
+                      <div className="relative md:col-span-2">
+                        <MapPin className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
+                        <input type="text" placeholder="Search location (e.g. Gulshan)" value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)} className={`w-full py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} />
+                      </div>
+                      <div className="relative md:col-span-3">
                         <School className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} />
                         <input type="text" placeholder="University name..." value={selectedUniversity} onChange={(e) => setSelectedUniversity(e.target.value)} className={`w-full py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} />
                       </div>
-                      <select value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none">
+                      <select value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none md:col-span-2">
                         <option value="">All Genders</option>
                         <option value="Male">Male Teacher</option>
                         <option value="Female">Female Teacher</option>
                       </select>
-                      <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none">
+                      <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white outline-none md:col-span-2">
                         <option value="">{t('step1')}</option>
                         {Object.keys(curriculumData).map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
                       </select>
-                      <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none">
+                      <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none md:col-span-2">
                         <option value="">{t('step2')}</option>
                         {selectedLevel && Object.keys(curriculumData[selectedLevel]).map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}
                       </select>
-                      <select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none">
+                      <select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50 outline-none md:col-span-1">
                         <option value="">{t('step3')}</option>
                         {selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}
                       </select>
@@ -1120,7 +1160,7 @@ export default function App() {
                           <><Navigation size={20} className={isNearbyActive ? 'text-emerald-500' : 'text-slate-400'} /> {t('findNearby')}</>
                         )}
                       </button>
-                      <button onClick={() => { setSearchQuery(''); setSelectedUniversity(''); setSelectedGender(''); setSelectedLevel(''); setSelectedGroup(''); setSelectedSubject(''); setIsNearbyActive(false); }} className="px-6 py-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">Clear Filters</button>
+                      <button onClick={() => { setSearchQuery(''); setSelectedLocation(''); setSelectedUniversity(''); setSelectedGender(''); setSelectedLevel(''); setSelectedGroup(''); setSelectedSubject(''); setIsNearbyActive(false); }} className="px-6 py-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors">Clear Filters</button>
                     </div>
                   </div>
                   {/* Section 1: Best Rated Matches */}
@@ -1147,7 +1187,7 @@ export default function App() {
                             <h3 className="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2"><ThumbsUp className="text-indigo-500" /> {isNearbyActive ? 'Suggested Nearby' : 'Suggested for You'}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pb-20">
                             {suggestions.map(tutor => (
-                            <div key={tutor.id} className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden flex flex-col group hover:shadow-lg transition-all cursor-pointer opacity-90 hover:opacity-100" onClick={() => setSelectedTutor(tutor)}>
+                            <div key={tutor.id} className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden flex flex-col group hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300 cursor-pointer opacity-90 hover:opacity-100" onClick={() => setSelectedTutor(tutor)}>
                             <div className="relative h-28 bg-slate-50"><img src={tutor.image} className="w-full h-full object-cover" /></div>
                             <div className="p-3 flex-1 flex flex-col">
                             <h4 className="font-bold text-slate-700 text-xs line-clamp-1 flex items-center gap-1">{tutor.name} {tutor.isVerified && <ShieldCheck size={12} className="text-blue-500 fill-blue-50" />}</h4>
@@ -1231,7 +1271,7 @@ export default function App() {
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
                       {filteredVideos.map(video => (
-                        <div key={video.id} className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}>
+                        <div key={video.id} className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}>
                           <div className="relative h-44 bg-slate-900">
                             <img src={video.thumbnail} className="w-full h-full object-cover opacity-70 group-hover:scale-105 group-hover:opacity-90 transition-transform duration-500" />
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
@@ -1270,7 +1310,7 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {filteredBookings.map(b => (
-                      <div key={b.id} className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 transition-all hover:shadow-lg">
+                      <div key={b.id} className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 transition-all hover:shadow-lg">
                          <div className="flex items-center gap-4 mb-4"><img src={b.image} className="w-12 h-12 rounded-full"/><h4 className="font-bold">{b.tutorName}</h4></div>
                          <p className="text-sm">Subject: {b.subject}</p>
                          <p className="text-sm">Status: <span className="font-bold uppercase text-xs">{b.status}</span></p>
@@ -1283,7 +1323,7 @@ export default function App() {
             {!selectedTutor && (displayPage === 'requests' || displayPage === 'messages') && (
                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   {!hasMembership ? (
-                    <div className="bg-white/60 backdrop-blur-2xl p-10 md:p-16 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-white/50 text-center max-w-2xl mx-auto mt-12 relative overflow-hidden">
+                    <div className="bg-white/60 backdrop-blur-md p-10 md:p-16 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] border border-white/50 text-center max-w-2xl mx-auto mt-12 relative overflow-hidden">
                       <div className="absolute -top-24 -right-24 w-64 h-64 bg-amber-200/20 rounded-full blur-3xl animate-mesh"></div>
                       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl animate-mesh" style={{ animationDelay: '-5s' }}></div>
 
@@ -1313,7 +1353,7 @@ export default function App() {
                             <h2 className="text-4xl font-black mb-2 flex items-center gap-4 relative z-10"><Briefcase size={40} /> Tuition Requests</h2>
                             <p className="text-emerald-50 text-lg font-medium relative z-10">Manage and respond to new opportunities.</p>
                           </div>
-                          <div className="bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50">
+                          <div className="bg-white/60 backdrop-blur-sm p-8 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50">
                              {tutorRequests.length === 0 ? (
                                <div className="text-center py-20 text-slate-400 font-black border-2 border-dashed border-white/80 rounded-[2rem] uppercase tracking-widest text-sm">No incoming tuition requests yet.</div>
                              ) : (
@@ -1327,8 +1367,8 @@ export default function App() {
                                      <div className="flex gap-4 w-full sm:w-auto">
                                        <button onClick={() => setTutorRequests(prev => prev.filter(r => r.id !== req.id))} className="flex-1 sm:flex-none bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-3.5 rounded-2xl font-black shadow-lg shadow-emerald-100 transition-all active:scale-95">Accept</button>
                                        <button onClick={() => setTutorRequests(prev => prev.filter(r => r.id !== req.id))} className="flex-1 sm:flex-none bg-white text-rose-500 border border-white hover:border-rose-100 hover:bg-rose-50 px-8 py-3.5 rounded-2xl font-black transition-all active:scale-95 shadow-sm">Decline</button>
-                                     </div>
-                                   </div>
+                                       <button onClick={() => setReportModalData({ userId: req.id, name: req.studentName, role: 'Student' })} className="flex-none py-3.5 px-5 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-all border border-red-100 hover:shadow-md shadow-sm" title="Report Student"><AlertCircle size={20}/></button>
+                                     </div>                                   </div>
                                  ))}
                                </div>
                              )}
@@ -1337,7 +1377,7 @@ export default function App() {
                       )}
 
                       {displayPage === 'messages' && (
-                        <div className="relative bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden h-[700px] flex">
+                        <div className="relative bg-white/60 backdrop-blur-sm rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden h-[700px] flex">
                           <div className={`w-full md:w-80 border-r border-white/50 flex flex-col bg-white/30 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
                              <div className="p-6 border-b border-white/50 bg-white/50 backdrop-blur-md font-black text-slate-800 flex items-center gap-3 text-xl tracking-tight leading-none"><MessageSquare className="text-indigo-600" size={24}/> {t('messages')}</div>
                              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
@@ -1388,7 +1428,7 @@ export default function App() {
             {!selectedTutor && displayPage === 'support' && (
                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-10 rounded-[2.5rem] text-white shadow-2xl shadow-orange-100 mb-10"><h2 className="text-4xl font-black mb-2 flex items-center gap-4"><HelpCircle size={40} /> {t('supportTitle')}</h2><p className="text-orange-50 text-lg font-medium">We are here 24/7 to help you.</p></div>
-                  <div className="bg-white/60 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 text-center">
+                  <div className="bg-white/60 backdrop-blur-sm p-10 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 text-center">
                     <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner"><Mail size={32} /></div>
                     <h3 className="text-2xl font-black text-slate-800 mb-2">Contact Professional Support</h3>
                     <p className="text-slate-500 font-bold mb-8">Email: support@tuitionhub.com</p>
@@ -1396,9 +1436,43 @@ export default function App() {
                   </div>
                </div>
             )}
-            
+
+            {!selectedTutor && displayPage === 'reportTeacher' && (
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-gradient-to-r from-red-500 to-rose-600 p-10 rounded-[2.5rem] text-white shadow-2xl shadow-red-100 mb-10">
+                    <h2 className="text-4xl font-black mb-2 flex items-center gap-4"><ShieldAlert size={40} /> {t('reportTeacher')}</h2>
+                    <p className="text-red-50 text-lg font-medium">Submit a complaint or report a teacher. We take this seriously.</p>
+                  </div>
+                  <div className="bg-white/60 backdrop-blur-sm p-10 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50">
+                    <div className="max-w-2xl mx-auto space-y-6">
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Select Teacher to Report</label>
+                        <select className="w-full py-4 px-5 rounded-2xl border border-slate-200 focus:border-red-500 bg-white outline-none">
+                          <option value="">-- Choose a teacher --</option>
+                          {mockTutors.slice(0,15).map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Reason for Report</label>
+                        <select className="w-full py-4 px-5 rounded-2xl border border-slate-200 focus:border-red-500 bg-white outline-none">
+                          <option value="">-- Select reason --</option>
+                          <option value="unprofessional">Unprofessional Behavior</option>
+                          <option value="absent">Frequently Absent</option>
+                          <option value="harassment">Harassment or Abuse</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Detailed Description</label>
+                        <textarea rows="5" className="w-full p-5 bg-white border border-slate-200 rounded-2xl outline-none focus:border-red-500 transition-all font-medium resize-none" placeholder="Please provide specific details about the incident..."></textarea>
+                      </div>
+                      <button onClick={() => { alert('Report submitted successfully. Our admin team will review it shortly.'); setActivePage('dashboard'); window.scrollTo(0,0); }} className="w-full py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl font-black text-lg shadow-lg shadow-red-100 hover:-translate-y-1 active:scale-95 transition-all">Submit Report</button>
+                    </div>
+                  </div>
+               </div>
+            )}            
             {!selectedTutor && displayPage === 'updateProfile' && (
-               <div className="bg-white/60 backdrop-blur-2xl p-10 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in-95 max-w-4xl mx-auto border border-white/50 relative overflow-hidden">
+               <div className="bg-white/60 backdrop-blur-md p-10 rounded-[3rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in-95 max-w-4xl mx-auto border border-white/50 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
                   
                   <div className="relative z-10">
@@ -1579,6 +1653,7 @@ export default function App() {
                       Cancel
                     </button>
                   </div>
+                </div>
                </div>
             )}
 
@@ -1597,7 +1672,7 @@ export default function App() {
   return (
     <div className="relative min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden" dir={dir}>
       <FloatingBackground />
-      <div className="relative z-10 w-full max-w-md bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden transition-all duration-500">
+      <div className="relative z-10 w-full max-w-md bg-white/70 backdrop-blur-md rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/50 overflow-hidden transition-all duration-300">
         <div className="flex border-b border-white/50">
           <button className={`flex-1 py-5 font-black text-sm uppercase tracking-widest transition-all ${!isLogin ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white/40' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setIsLogin(false)}>{t('signUp')}</button>
           <button className={`flex-1 py-5 font-black text-sm uppercase tracking-widest transition-all ${isLogin ? 'text-indigo-600 border-b-2 border-indigo-600 bg-white/40' : 'text-slate-400 hover:text-slate-600'}`} onClick={() => setIsLogin(true)}>{t('logIn')}</button>

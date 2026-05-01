@@ -1,0 +1,1312 @@
+
+import React, { useState, useRef, useEffect } from 'react';
+import { Mail, Lock, User, Phone, MapPin, GraduationCap, Users, BookOpen, ArrowRight, Menu, X, LogOut, Globe, Grid, HelpCircle, FileText, Search, ChevronRight, ChevronLeft, Beaker, Briefcase, Palette, Star, AlertCircle, Building2, Calendar, CheckSquare, Award, IdCard, UploadCloud, MessageSquare, Video, Plus, Trash2, PlayCircle, Bell, Heart, ThumbsUp, Send, ShieldAlert, Facebook, Instagram, Linkedin, MessageCircle, Navigation } from 'lucide-react';
+
+// ==========================================
+// 1. TRANSLATION DICTIONARY
+// ==========================================
+const translations = {
+  'UK English': {
+    signUp: 'Sign Up', logIn: 'Log In', iam: 'I am a...', student: 'Student', guardian: 'Guardian', tutor: 'Tutor',
+    name: 'Full Name', mobile: 'Mobile Number', address: 'Full Address', email: 'Email Address', password: 'Password',
+    createBtn: 'Create Account', loginBtn: 'Log In to Dashboard', processing: 'Processing...', or: 'OR', google: 'Continue with Google',
+    menu: 'Menu', categories: 'Categories', language: 'Language', support: 'Support System', terms: 'Terms & Conditions', logout: 'Log Out',
+    welcome: 'Welcome to your Dashboard!', portal: 'Portal', findTutor: 'Find a Tutor',
+    step1: 'Step 1: Select Educational Level', step2: 'Step 2: Select Group', step3: 'Step 3: Choose Subject', search: 'Search Tutors',
+    msgStudent: 'We ensure best tutor for your future.', msgGuardian: 'We ensure best teacher for your child best future.', msgTutor: 'We ensure safe and best experience.',
+    subtitle: 'Connect, Learn, and Grow together.', recentActivity: 'Recent Activity', recentDesc: 'Your recent updates will appear here.',
+    quickActions: 'Quick Actions', quickDesc: 'Fast access to your most used tools.', tuitionReq: 'Tuition Requests', reqDesc: 'New student requests matching your expertise will appear here.',
+    earnings: 'My Profile & Earnings', earnDesc: 'Manage your schedule and track your income.', Level: 'Level', searchAlert: 'Searching for the best {sub} tutors for {lvl} {grp}...',
+    topTutors: 'Top Rated Tutors', bookNow: 'Book Now', reviews: 'reviews', aboutMe: 'About Me', experience: 'Experience', education: 'Education', hourlyRate: 'Hourly Rate', moreTutors: 'More Tutors', expertise: 'Expertise',
+    mandatoryProfileMsg: 'You must complete your profile to access the tutor dashboard.', createProfileTitle: 'Complete Your Profile', certName: 'Name (As per SSC/HSC)', homeAddress: 'Home Address', postalCode: 'Postal Code', currentAddress: 'Current Address',
+    varsityMail: 'University Email', personalMail: 'Personal Email', age: 'Age', gender: 'Gender', selectGender: 'Select Gender', male: 'Male', female: 'Female', other: 'Other', university: 'University/College (Govt. of BD)',
+    achievements: 'HSC / Admission Achievements', termsAgree: 'I agree to the Terms & Conditions', saveProfile: 'Save Profile', identityVerification: 'Identity Verification', idType: 'Document Type', studentId: 'Student ID Card', nidCard: 'National ID (NID)', 
+    uploadFront: 'Scan/Upload Front Side', uploadBack: 'Scan/Upload Back Side', scanInstruction: 'Please upload clear photos or scans of both sides.', prevTuitions: 'Previous Tuitions (Count)',
+    updateProfile: 'Update Profile', messages: 'Messages', teachingSubjects: 'Teaching Subjects (Max 3)', addSubject: 'Add Subject', demoClass: 'Mandatory Demo Videos', uploadVideo: 'Upload 20-min Video', maxSubjectsReached: 'Max 3 subjects reached', videoInstruction: 'Please upload a clear 20-minute recorded class on a specific topic for this subject.',
+    demoFeed: 'Explore Demo Classes', watchNow: 'Watch & Rate', comments: 'Comments', writeComment: 'Write a comment...', post: 'Post', ratingAlert: 'Thank you for rating!',
+    notifications: 'Notifications', noNotifs: 'No new notifications.', newCommentNotif: 'New comment on your {sub} video.',
+    contentBlockedAlert: 'SECURITY ALERT: Tutors are not allowed to share phone numbers, emails, links, or addresses in comments. Your message has been blocked.',
+    reply: 'Reply', videoTooLongAlert: 'Video duration must be strictly under 20 minutes. Please select a shorter video.', upNext: 'Up Next',
+    dashboardPage: 'Dashboard', allDemoClasses: 'All Demo Classes',
+    premiumRequired: 'Premium Membership Required', messagesLockedDesc: 'You have {count} new messages from students/guardians. Upgrade your account to unlock direct messaging and contact details.', upgradeNow: 'Upgrade Now', typeMessage: 'Type a message...',
+    profileUpdatedAlert: 'Profile updated successfully!', keepProfileUpdated: 'Keep your profile updated to attract more students.',
+    allTutors: 'All Tutors', findTutorDesc: 'Search and filter through our expert educators.',
+    supportTitle: 'Support System', supportDesc: 'Facing any issues? We are here to help you 24/7.', contactAdmin: 'Message Admin', subjectLabel: 'Subject', messageLabel: 'Your Message', sendMsgBtn: 'Send Message', contactInfo: 'Contact Information', followUs: 'Follow Us',
+    findNearby: 'Find Nearby Tutors', detectingLoc: 'Detecting Location...', kmAway: 'km away',
+    bookMe: 'Book Me', moreDetails: 'More Details', currentUniversity: 'Current University', achievementsLife: 'Achievements & Awards', messageTutor: 'Message Tutor'
+  },
+  'Bangla (বাংলা)': {
+    signUp: 'নিবন্ধন করুন', logIn: 'লগ ইন', iam: 'আমি একজন...', student: 'শিক্ষার্থী', guardian: 'অভিভাবক', tutor: 'শিক্ষক',
+    name: 'পুরো নাম', mobile: 'মোবাইল নম্বর', address: 'পূর্ণ ঠিকানা', email: 'ইমেইল ঠিকানা', password: 'পাসওয়ার্ড',
+    createBtn: 'অ্যাকাউন্ট তৈরি করুন', loginBtn: 'ড্যাশবোর্ডে লগ ইন করুন', processing: 'প্রক্রিয়াধীন...', or: 'অথবা', google: 'Google এর সাথে চালিয়ে যান',
+    menu: 'মেনু', categories: 'বিভাগ', language: 'ভাষা', support: 'সাপোর্ট সিস্টেম', terms: 'শর্তাবলী', logout: 'লগ আউট',
+    welcome: 'আপনার ড্যাশবোর্ডে স্বাগতম!', portal: 'পোর্টাল', findTutor: 'শিক্ষক খুঁজুন',
+    step1: 'ধাপ ১: শিক্ষার স্তর নির্বাচন করুন', step2: 'ধাপ ২: গ্রুপ নির্বাচন করুন', step3: 'ধাপ ৩: বিষয় চয়ন করুন', search: 'শিক্ষক অনুসন্ধান করুন',
+    msgStudent: 'আমরা আপনার ভবিষ্যতের জন্য সেরা শিক্ষকের নিশ্চয়তা দিই।', msgGuardian: 'আমরা আপনার সন্তানের উজ্জ্বল ভবিষ্যতের জন্য সেরা শিক্ষকের নিশ্চয়তা দিই।', msgTutor: 'আমরা নিরাপদ এবং সেরা অভিজ্ঞতার নিশ্চয়তা দিই।',
+    subtitle: 'একসাথে যুক্ত হোন, শিখুন এবং বেড়ে উঠুন।', recentActivity: 'সাম্প্রতিক কার্যকলাপ', recentDesc: 'আপনার সাম্প্রতিক আপডেটগুলি এখানে প্রদর্শিত হবে।', quickActions: 'দ্রুত পদক্ষেপ', quickDesc: 'আপনার সর্বাধিক ব্যবহৃত সরঞ্জামগুলিতে দ্রুত অ্যাক্সেস।', tuitionReq: 'টিউশনের অনুরোধ', reqDesc: 'আপনার দক্ষতার সাথে মিলে যাওয়া নতুন শিক্ষার্থীদের অনুরোধ এখানে দেখা যাবে।',
+    earnings: 'আমার প্রোফাইল ও আয়', earnDesc: 'আপনার সময়সূচী পরিচালনা করুন এবং আপনার আয় ট্র্যাক করুন।', Level: 'স্তর', searchAlert: '{lvl} {grp} এর {sub} এর জন্য সেরা শিক্ষক খোঁজা হচ্ছে...',
+    topTutors: 'শীর্ষ রেটেড শিক্ষক', bookNow: 'বুক করুন', reviews: 'রিভিউ', aboutMe: 'আমার সম্পর্কে', experience: 'অভিজ্ঞতা', education: 'শিক্ষাগত যোগ্যতা', hourlyRate: 'ঘণ্টাপ্রতি রেট', moreTutors: 'আরও শিক্ষক', expertise: 'দক্ষতা',
+    mandatoryProfileMsg: 'ট्यूटर ড্যাশবোর্ড অ্যাক্সেস করতে আপনাকে অবশ্যই প্রোফাইল সম্পূর্ণ করতে হবে।', createProfileTitle: 'আপনার প্রোফাইল সম্পূর্ণ করুন', certName: 'নাম (এসএসসি/এইচএসসি সনদ অনুযায়ী)', homeAddress: 'স্থায়ী ঠিকানা', postalCode: 'পোস্টাল কোড', currentAddress: 'বর্তমান ঠিকানা',
+    varsityMail: 'বিশ্ববিদ্যালয় ইমেইল', personalMail: 'ব্যক্তিগত ইমেইল', age: 'বয়স', gender: 'লিঙ্গ', selectGender: 'লিঙ্গ নির্বাচন করুন', male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য', university: 'বিশ্ববিদ্যালয়/কলেজ (বাংলাদেশ সরকার অনুমোদিত)',
+    achievements: 'এইচএসসি / ভর্তি পরীক্ষার অর্জন', termsAgree: 'আমি শর্তাবলীতে সম্মত', saveProfile: 'প্রোফাইল সংরক্ষণ করুন', identityVerification: 'পরিচয় যাচাইকরণ', idType: 'ডকুমেন্টের ধরন', studentId: 'স্টুডেন্ট আইডি কার্ড', nidCard: 'এনআইডি কার্ড', 
+    uploadFront: 'সামনের দিক স্ক্যান/আপলোড', uploadBack: 'পেছনের দিক স্ক্যান/আপলোড', scanInstruction: 'দয়া করে উভয় দিকের পরিষ্কার স্ক্যান বা ছবি আপলোড করুন।', prevTuitions: 'পূর্ববর্তী টিউশনের সংখ্যা',
+    updateProfile: 'প্রোফাইল আপডেট করুন', messages: 'মেসেজসমূহ', teachingSubjects: 'পড়ানোর বিষয় (সর্বোচ্চ ৩টি)', addSubject: 'বিষয় যোগ করুন', demoClass: 'বাধ্যতামূলক ডেমো ভিডিও', uploadVideo: '২০ মিনিটের ভিডিও আপলোড করুন', maxSubjectsReached: 'সর্বোচ্চ ৩টি বিষয় যোগ করা হয়েছে', videoInstruction: 'অনুগ্রহ করে এই বিষয়ের একটি নির্দিষ্ট টপিকের উপর পরিষ্কার ২০ মিনিটের রেকর্ড করা ক্লাস আপলোড করুন।',
+    demoFeed: 'ডেমো ক্লাস এক্সপ্লোর করুন', watchNow: 'দেখুন এবং রেট দিন', comments: 'মন্তব্য', writeComment: 'একটি মন্তব্য লিখুন...', post: 'পোস্ট', ratingAlert: 'রেটিং দেওয়ার জন্য ধন্যবাদ!',
+    notifications: 'নোটিফিকেশন', noNotifs: 'কোনো নতুন নোটিফিকেশন নেই।', newCommentNotif: 'আপনার {sub} ভিডিওতে নতুন মন্তব্য।',
+    contentBlockedAlert: 'নিরাপত্তা সতর্কতা: শিক্ষকদের মন্তব্যে ফোন নম্বর, ইমেইল বা লিঙ্ক শেয়ার করার অনুমতি নেই। আপনার বার্তা ব্লক করা হয়েছে।', reply: 'রিপ্লাই', videoTooLongAlert: 'ভিডিওর দৈর্ঘ্য অবশ্যই ২০ মিনিটের কম হতে হবে। অনুগ্রহ করে একটি ছোট ভিডিও নির্বাচন করুন।', upNext: 'পরবর্তী ভিডিও',
+    dashboardPage: 'ড্যাশবোর্ড', allDemoClasses: 'সকল ডেমো ক্লাস',
+    premiumRequired: 'প্রিমিয়াম মেম্বারশিপ প্রয়োজন', messagesLockedDesc: 'আপনার কাছে শিক্ষার্থী/অভিভাবকদের থেকে {count}টি নতুন মেসেজ আছে। মেসেজ পড়তে এবং যোগাযোগ করতে অ্যাকাউন্ট আপগ্রেড করুন।', upgradeNow: 'এখনই আপগ্রেড করুন', typeMessage: 'একটি মেসেজ লিখুন...',
+    profileUpdatedAlert: 'প্রোফাইল সফলভাবে আপডেট হয়েছে!', keepProfileUpdated: 'আরও শিক্ষার্থী আকর্ষণ করতে আপনার প্রোফাইল আপডেট রাখুন।',
+    allTutors: 'সকল শিক্ষক', findTutorDesc: 'আমাদের বিশেষজ্ঞ শিক্ষকদের খুঁজুন এবং ফিল্টার করুন।',
+    supportTitle: 'সাপোর্ট সিস্টেম', supportDesc: 'কোনো সমস্যার সম্মুখীন হচ্ছেন? আমরা ২৪/৭ আপনাকে সাহায্য করতে এখানে আছি।', contactAdmin: 'অ্যাডমিনকে মেসেজ করুন', subjectLabel: 'বিষয়', messageLabel: 'আপনার মেসেজ', sendMsgBtn: 'মেসেজ পাঠান', contactInfo: 'যোগাযোগের তথ্য', followUs: 'আমাদের ফলো করুন',
+    findNearby: 'নিকটবর্তী শিক্ষক খুঁজুন', detectingLoc: 'লোকেশন শনাক্ত করা হচ্ছে...', kmAway: 'কিমি দূরে',
+    bookMe: 'বুক করুন', moreDetails: 'আরও বিবরণ', currentUniversity: 'বর্তমান বিশ্ববিদ্যালয়', achievementsLife: 'অর্জন ও পুরস্কার', messageTutor: 'শিক্ষককে মেসেজ দিন'
+  },
+  'Hindi (हिन्दी)': {
+    signUp: 'साइन अप', logIn: 'लॉग इन', iam: 'मैं एक...', student: 'छात्र', guardian: 'अभिभावक', tutor: 'शिक्षक',
+    name: 'पूरा नाम', mobile: 'मोबाइल नंबर', address: 'पूरा पता', email: 'ईमेल पता', password: 'पासवर्ड',
+    createBtn: 'खाता बनाएं', loginBtn: 'डैशबोर्ड में लॉग इन करें', processing: 'प्रसंस्करण...', or: 'या', google: 'Google के साथ जारी रखें',
+    menu: 'मेनू', categories: 'श्रेणियां', language: 'भाषा', support: 'सहायता प्रणाली', terms: 'नियम और शर्तें', logout: 'लॉग आउट',
+    welcome: 'आपके डैशबोर्ड में स्वागत है!', portal: 'पोर्टल', findTutor: 'शिक्षक खोजें',
+    step1: 'चरण 1: शैक्षिक स्तर चुनें', step2: 'चरण 2: समूह चुनें', step3: 'चरण 3: विषय चुनें', search: 'शिक्षक खोजें',
+    msgStudent: 'हम आपके भविष्य के लिए सर्वश्रेष्ठ ट्यूटर सुनिश्चित करते हैं।', msgGuardian: 'हम आपके बच्चे के बेहतर भविष्य के लिए सर्वश्रेष्ठ शिक्षक सुनिश्चित करते हैं।', msgTutor: 'हम सुरक्षित और बेहतरीन अनुभव सुनिश्चित करते हैं।',
+    subtitle: 'एक साथ जुड़ें, सीखें और आगे बढ़ें।', Level: 'स्तर', searchAlert: '{lvl} {grp} के लिए सर्वश्रेष्ठ {sub} ट्यूटर खोजे जा रहे हैं...',
+    topTutors: 'शीर्ष रेटेड शिक्षक', bookNow: 'अभी बुक करें', reviews: 'समीक्षाएं', aboutMe: 'मेरे बारे में', experience: 'अनुभव', education: 'शिक्षा', hourlyRate: 'प्रति घंटे की दर', moreTutors: 'अधिक शिक्षक', expertise: 'विशेषज्ञता',
+    mandatoryProfileMsg: 'ट्यूटर डैशबोर्ड तक पहुँचने के लिए आपको अपनी प्रोफ़ाइल पूरी करनी होगी।', createProfileTitle: 'अपनी प्रोफ़ाइल पूरी करें', certName: 'नाम (एसएससी/एचएससी प्रमाणपत्र के अनुसार)', homeAddress: 'घर का पता', postalCode: 'पोस्टल कोड', currentAddress: 'वर्तमान पता',
+    varsityMail: 'विश्वविद्यालय ईमेल', personalMail: 'व्यक्तिगत ईमेल', age: 'आयु', gender: 'लिंग', selectGender: 'लिंग चुनें', male: 'पुरुष', female: 'महिला', other: 'अन्य', university: 'विश्वविद्यालय/कॉलेज (बांग्लादेश सरकार द्वारा मान्यता प्राप्त)',
+    achievements: 'एचएससी / प्रवेश उपलब्धियां', termsAgree: 'मैं नियम और शर्तों से सहमत हूँ', saveProfile: 'प्रोफ़ाइल सहेजें', identityVerification: 'पहचान सत्यापन', idType: 'दस्तावेज़ का प्रकार', studentId: 'छात्र आईडी कार्ड', nidCard: 'एनआईडी कार्ड', 
+    uploadFront: 'सामने का भाग स्कैन/अपलोड करें', uploadBack: 'पीछे का भाग स्कैन/अपलोड करें', scanInstruction: 'कृपया दोनों तरफ के स्पष्ट स्कैन या फोटो अपलोड करें।', prevTuitions: 'पिछली ट्यूशन की संख्या',
+    updateProfile: 'प्रोफ़ाइल अपडेट करें', messages: 'संदेश', teachingSubjects: 'पढ़ाने के विषय (अधिकतम 3)', addSubject: 'विषय जोड़ें', demoClass: 'अनिवार्य डेमो वीडियो', uploadVideo: '20-मिनट का वीडियो अपलोड करें', maxSubjectsReached: 'अधिकतम 3 विषय पूरे हुए', videoInstruction: 'कृपया इस विषय के किसी विशिष्ट विषय पर 20 मिनट की स्पष्ट रिकॉर्ड की गई कक्षा अपलोड करें।',
+    demoFeed: 'डेमो कक्षाएं देखें', watchNow: 'देखें और रेट करें', comments: 'टिप्पणियाँ', writeComment: 'एक टिप्पणी लिखें...', post: 'पोस्ट', ratingAlert: 'रेटिंग के लिए धन्यवाद!',
+    notifications: 'सूचनाएं', noNotifs: 'कोई नई सूचना नहीं।', newCommentNotif: 'आपके {sub} वीडियो पर नई टिप्पणी।',
+    contentBlockedAlert: 'सुरक्षा अलर्ट: ट्यूटर्स को टिप्पणियों में फ़ोन नंबर, ईमेल या लिंक साझा करने की अनुमति नहीं है। आपका संदेश ब्लॉक कर दिया गया है।', reply: 'जवाब दें', videoTooLongAlert: 'वीडियो की अवधि 20 मिनट से कम होनी चाहिए। कृपया एक छोटा वीडियो चुनें।', upNext: 'आगे देखें',
+    dashboardPage: 'डैशबोर्ड', allDemoClasses: 'सभी डेमो कक्षाएं',
+    premiumRequired: 'प्रीमियम सदस्यता आवश्यक', messagesLockedDesc: 'आपके पास छात्रों/अभिभावकों से {count} नए संदेश हैं। संदेशों को पढ़ने और संपर्क करने के लिए अपना खाता अपग्रेड करें।', upgradeNow: 'अभी अपग्रेड करें', typeMessage: 'एक संदेश लिखें...',
+    profileUpdatedAlert: 'प्रोफ़ाइल सफलतापूर्वक अपडेट हो गई!', keepProfileUpdated: 'अधिक छात्रों को आकर्षित करने के लिए अपनी प्रोफ़ाइल अपडेट रखें।',
+    allTutors: 'सभी शिक्षक', findTutorDesc: 'हमारे विशेषज्ञ शिक्षकों को खोजें और फ़िल्टर करें।',
+    supportTitle: 'सहायता प्रणाली', supportDesc: 'किसी भी समस्या का सामना कर रहे हैं? हम 24/7 आपकी मदद के लिए यहाँ हैं।', contactAdmin: 'व्यवस्थापक को संदेश भेजें', subjectLabel: 'विषय', messageLabel: 'आपका संदेश', sendMsgBtn: 'संदेश भेजें', contactInfo: 'संपर्क जानकारी', followUs: 'हमारा अनुसरण करें',
+    findNearby: 'आस-पास के ट्यूटर खोजें', detectingLoc: 'स्थान का पता लगाया जा रहा है...', kmAway: 'किमी दूर',
+    bookMe: 'मुझे बुक करें', moreDetails: 'अधिक जानकारी', currentUniversity: 'वर्तमान विश्वविद्यालय', achievementsLife: 'उपलब्धियां और पुरस्कार', messageTutor: 'ट्यूटर को संदेश भेजें'
+  },
+  'Urdu (اردو)': {
+    signUp: 'سائن اپ', logIn: 'لاگ ان', iam: 'میں ایک...', student: 'طالب علم', guardian: 'سرپرست', tutor: 'ٹیوٹر',
+    name: 'پورا نام', mobile: 'موبائل نمبر', address: 'پورا پتہ', email: 'ای میل ایڈریس', password: 'پاس ورڈ',
+    createBtn: 'اکاؤنٹ بنائیں', loginBtn: 'ڈیش بورڈ میں لاگ ان کریں', processing: 'پروسیسنگ...', or: 'يا', google: 'گوگل کے ساتھ جاری رکھیں',
+    menu: 'مینو', categories: 'اقسام', language: 'زبان', support: 'سپورٹ سسٹم', terms: 'شرائط و ضوابط', logout: 'لاگ آؤٹ',
+    welcome: 'آپ کے ڈیش بورڈ میں خوش آمدید!', portal: 'پورٹل', findTutor: 'ٹیوٹر تلاش کریں',
+    step1: 'مرحلہ 1: تعلیمی سطح منتخب کریں', step2: 'مرحلہ 2: گروپ منتخب کریں', step3: 'مرحلہ 3: مضمون کا انتخاب کریں', search: 'ٹیوٹرز تلاش کریں',
+    msgStudent: 'ہم آپ کے مستقبل کے لیے بہترین ٹیوٹر کو یقینی بناتے ہیں۔', msgGuardian: 'ہم آپ کے بچے کے بہترین مستقبل کے لیے بہترین استاد کو یقینی بناتے ہیں۔', msgTutor: 'ہم محفوظ اور بہترین تجربے کو یقینی بناتے ہیں۔',
+    subtitle: 'ایک ساتھ جڑیں، سیکھیں، اور بڑھیں۔', Level: 'سطح', searchAlert: '{lvl} {grp} کے لیے بہترین {sub} ٹیوٹرز تلاش کر رہے ہیں...',
+    topTutors: 'اعلی درجہ کے ٹیوٹرز', bookNow: 'ابھی بک کریں', reviews: 'جائزے', aboutMe: 'میرے بارے میں', experience: 'تجربہ', education: 'تعلیم', hourlyRate: 'فی گھنٹہ ریٹ', moreTutors: 'مزید ٹیوٹرز', expertise: 'مہارت',
+    mandatoryProfileMsg: 'ٹیوٹر ڈیش بورڈ تک رسائی کے لیے آپ کو اپنا پروفائل مکمل کرنا ہوگا۔', createProfileTitle: 'اپنا پروفائل مکمل کریں', certName: 'نام (ایس ایس سی/ایچ ایس سی سرٹیفکیٹ کے مطابق)', homeAddress: 'گھر کا پتہ', postalCode: 'پوسٹل کوڈ', currentAddress: 'موجودہ پتہ',
+    varsityMail: 'یونیورسٹی ای میل', personalMail: 'ذاتی ای میل', age: 'عمر', gender: 'صنف', selectGender: 'صنف منتخب کریں', male: 'مرد', female: 'عورت', other: 'دیگر', university: 'یونیورسٹی/کالج (حکومت بنگلہ دیش سے منظور شدہ)',
+    achievements: 'ایچ ایس سی / داخلہ کی کامیابیاں', termsAgree: 'میں شرائط و ضوابط سے متفق ہوں', saveProfile: 'پروفائل محفوظ کریں', identityVerification: 'شناخت کی تصدیق', idType: 'دستاویز کی قسم', studentId: 'طالب علم کا شناختی کارڈ', nidCard: 'قومی شناختی کارڈ', 
+    uploadFront: 'سامنے کا حصہ اسکین/اپ لوڈ کریں', uploadBack: 'پیچھے کا حصہ اسکین/اپ لوڈ کریں', scanInstruction: 'براہ کرم دونوں اطراف کی واضح اسکین یا تصاویر اپ لوڈ کریں۔', prevTuitions: 'پچھلی ٹیوشنز کی تعداد',
+    updateProfile: 'پروفائل اپ ڈیٹ کریں', messages: 'پیغامات', teachingSubjects: 'پڑھانے کے مضامین (زیادہ سے زیادہ 3)', addSubject: 'مضمون شامل کریں', demoClass: 'لازمی ڈیمو ویڈیوز', uploadVideo: '20 منٹ کی ویڈیو اپ لوڈ کریں', maxSubjectsReached: 'زیادہ سے زیادہ 3 مضامین مکمل', videoInstruction: 'براہ کرم اس مضمون کے کسی خاص موضوع پر 20 منٹ کی واضح ریکارڈ شدہ کلاس اپ لوڈ کریں۔',
+    demoFeed: 'ڈیمو کلاسز دریافت کریں', watchNow: 'دیکھیں اور ریٹ کریں', comments: 'تبصرے', writeComment: 'ایک تبصرہ لکھیں...', post: 'پوسٹ', ratingAlert: 'ریٹنگ کے لیے شکریہ!',
+    notifications: 'اطلاعات', noNotifs: 'کوئی نئی اطلاع نہیں۔', newCommentNotif: 'آپ کی {sub} ویڈیو پر نیا تبصرہ۔',
+    contentBlockedAlert: 'سیکیورٹی الرٹ: ٹیوٹرز کو تبصروں میں فون نمبر، ای میل، یا لنکس شیئر کرنے کی اجازت نہیں ہے۔ آپ کا پیغام روک دیا گیا ہے۔', reply: 'جواب دیں', videoTooLongAlert: 'ویڈیو کا دورانیہ 20 منٹ سے کم ہونا چاہیے۔ براہ کرم ایک چھوٹی ویڈیو منتخب کریں۔', upNext: 'اگلا دیکھیں',
+    dashboardPage: 'ڈیش بورڈ', allDemoClasses: 'تمام ڈیمو کلاسز',
+    premiumRequired: 'پریمیم ممبرشپ درکار ہے', messagesLockedDesc: 'آپ کے پاس طلباء/سرپرستوں کی طرف سے {count} نئے پیغامات ہیں۔ براہ راست پیغام رسانی کو غیر مقفل کرنے کے لیے اپنا اکاؤنٹ اپ گریڈ کریں۔', upgradeNow: 'ابھی اپ گریڈ کریں', typeMessage: 'ایک پیغام لکھیں...',
+    profileUpdatedAlert: 'پروفائل کامیابی سے اپ ڈیٹ ہو گئی!', keepProfileUpdated: 'مزید طلباء کو راغب کرنے کے لیے اپنی پروفائل کو اپ ڈیٹ رکھیں۔',
+    allTutors: 'تمام ٹیوٹرز', findTutorDesc: 'ہمارے ماہر اساتذہ کو تلاش کریں اور فلٹر کریں۔',
+    supportTitle: 'سپورٹ سسٹم', supportDesc: 'کوئی مسئلہ درپیش ہے؟ ہم 24/7 آپ کی مدد کے لیے یہاں ہیں۔', contactAdmin: 'ایڈمن کو میسج کریں', subjectLabel: 'موضوع', messageLabel: 'آپ کا پیغام', sendMsgBtn: 'پیغام بھیجیں', contactInfo: 'رابطے کی معلومات', followUs: 'ہمیں فالو کریں',
+    findNearby: 'قریبی ٹیوٹرز تلاش کریں', detectingLoc: 'مقام کا پتہ لگایا جا رہا ہے...', kmAway: 'کلومیٹر دور',
+    bookMe: 'مجھے بک کریں', moreDetails: 'مزید تفصیلات', currentUniversity: 'موجودہ یونیورسٹی', achievementsLife: 'کامیابیاں اور ایوارڈز', messageTutor: 'ٹیوٹر کو پیغام بھیجیں'
+  }
+};
+
+const supportedLanguages = ['UK English', 'Bangla (বাংলা)', 'Hindi (हिन्दी)', 'Urdu (اردو)', 'Tamil (தமிழ்)', 'Nepali (नेपाली)', 'Sinhala (සිංහල)'];
+
+// ==========================================
+// 2. MOCK DATA & CONFIG
+// ==========================================
+const initialVideos = [
+  { id: 'v1', tutorId: 1, tutorName: 'Rafiqul Islam', subject: 'Physics', title: 'Vector Dynamics Mechanics', thumbnail: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&q=80&w=400&h=250', rating: 4.8, reactions: 45, comments: [{id: 'c1', role: 'student', author: 'Sami', text: 'Very clear explanation of Vectors!'}, {id: 'c2', role: 'tutor', author: 'Rafiqul Islam', text: 'Thank you Sami! Let me know if you need help with dot products.'}] },
+  { id: 'v2', tutorId: 2, tutorName: 'Nusrat Jahan', subject: 'English', title: 'Mastering Modifiers in Grammar', thumbnail: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&q=80&w=400&h=250', rating: 4.9, reactions: 89, comments: [] },
+  { id: 'v3', tutorId: 3, tutorName: 'Tanvir Ahmed', subject: 'Accounting', title: 'Financial Statements 101', thumbnail: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=400&h=250', rating: 5.0, reactions: 112, comments: [] },
+  { id: 'v4', tutorId: 4, tutorName: 'Ayesha Siddiqua', subject: 'Biology', title: 'Human Cell Structure Explained', thumbnail: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=400&h=250', rating: 4.7, reactions: 34, comments: [] },
+];
+
+const mockTutors = [
+  { id: 1, name: 'Rafiqul Islam', rating: 4.9, reviews: 124, subjects: ['Physics', 'Higher Mathematics'], image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rafiq&backgroundColor=b6e3f4', bio: 'Passionate physics enthusiast...', experience: '5+ Years', education: 'BSc in Physics, DU', rate: '৳500/hr', demoVideoId: 'v1', distance: 3.2, locationName: 'Mirpur, Dhaka', university: 'Dhaka University (DU)', achievements: 'National Science Olympiad Gold Medalist, 2021' },
+  { id: 2, name: 'Nusrat Jahan', rating: 4.8, reviews: 89, subjects: ['English', 'Bangla'], image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nusrat&backgroundColor=c0aede', bio: 'Expert language tutor...', experience: '3 Years', education: 'BA in English, JU', rate: '৳400/hr', demoVideoId: 'v2', distance: 1.5, locationName: 'Banani, Dhaka', university: 'Jahangirnagar University (JU)', achievements: 'Top Scorer in English Literature Batch' },
+  { id: 3, name: 'Tanvir Ahmed', rating: 5.0, reviews: 201, subjects: ['Accounting', 'Finance & Banking'], image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tanvir&backgroundColor=d1d4f9', bio: 'Dedicated commerce tutor...', experience: '7 Years', education: 'MBA, IBA', rate: '৳700/hr', demoVideoId: 'v3', distance: 5.8, locationName: 'Uttara, Dhaka', university: 'IBA, Dhaka University', achievements: 'Helped 50+ students secure A+ in Board Exams' },
+  { id: 4, name: 'Ayesha Siddiqua', rating: 4.7, reviews: 56, subjects: ['Biology', 'General Science'], image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ayesha&backgroundColor=ffd5dc', bio: 'Making science fun...', experience: '2 Years', education: 'BSc in Zoology, RU', rate: '৳350/hr', demoVideoId: 'v4', distance: 0.8, locationName: 'Gulshan, Dhaka', university: 'Rajshahi University (RU)', achievements: 'Medical Admission Test Top 500 Ranker' },
+  { id: 5, name: 'Mahmudul Hasan', rating: 4.9, reviews: 142, subjects: ['ICT', 'Chemistry'], image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mahmudul&backgroundColor=b6e3f4', bio: 'Tech-savvy educator bridging the gap between textbook math and real-world computing.', experience: '4 Years', education: 'BSc in CSE, BUET', rate: '৳600/hr', demoVideoId: 'v1', distance: 2.1, locationName: 'Mohakhali, Dhaka', university: 'BUET', achievements: 'National Hackathon Finalist, 2022' }
+];
+
+const mockChats = [
+  { id: 1, name: 'Sami (Student)', lastMessage: 'Hello Sir, I watched your Demo on Vectors. Are you available to teach Physics for HSC 1st year?', unread: 2 },
+  { id: 2, name: 'Mr. Rahim (Guardian)', lastMessage: 'We need an English tutor for my son preparing for board exams. What is your schedule?', unread: 1 },
+  { id: 3, name: 'Ayesha (Student)', lastMessage: 'Can you help me with Biology practically?', unread: 0 }
+];
+
+const curriculumData = {
+  SSC: {
+    Science: ['Physics', 'Chemistry', 'Higher Mathematics', 'Biology', 'General Mathematics', 'Bangla', 'English', 'ICT'],
+    Arts: ['History of Bangladesh', 'Geography', 'Economics', 'Civics', 'General Science', 'General Mathematics', 'Bangla', 'English', 'ICT'],
+    Commerce: ['Accounting', 'Finance & Banking', 'Business Entrepreneurship', 'General Science', 'General Mathematics', 'Bangla', 'English', 'ICT']
+  },
+  HSC: {
+    Science: ['Physics', 'Chemistry', 'Higher Math', 'Biology', 'ICT', 'Bangla', 'English'],
+    Arts: ['Logic', 'Islamic History', 'Civics', 'Sociology', 'Geography', 'ICT', 'Bangla', 'English'],
+    Commerce: ['Accounting', 'Business Organization', 'Finance & Banking', 'Production Management', 'ICT', 'Bangla', 'English']
+  }
+};
+
+// ==========================================
+// 3. COMPONENTS & HELPERS
+// ==========================================
+const FloatingBackground = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <style>{`@keyframes float-slow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }`}</style>
+    <div className="absolute top-10 left-10 opacity-30" style={{ animation: 'float-slow 7s infinite ease-in-out' }}><BookOpen size={48} className="text-blue-500" /></div>
+    <div className="absolute bottom-20 right-20 opacity-20" style={{ animation: 'float-slow 6s infinite ease-in-out' }}><GraduationCap size={56} className="text-indigo-600" /></div>
+  </div>
+);
+
+const hasForbiddenContent = (text) => {
+  const phoneRegex = /(?:\+?88|01)?\d{9,11}/; 
+  const emailRegex = /\S+@\S+\.\S+/;
+  const linkRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9]+\.[a-z]{2,})/i;
+  const addressWords = /(road|house|block|sector|flat|apt|apartment)\s*\d+/i; 
+  return phoneRegex.test(text) || emailRegex.test(text) || linkRegex.test(text) || addressWords.test(text);
+};
+
+// ==========================================
+// 4. MAIN APPLICATION
+// ==========================================
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const scrollContainerRef = useRef(null);
+  
+  // App Global State (Survives Logout in this demo)
+  const [globalVideos, setGlobalVideos] = useState(initialVideos);
+  const [tutorNotifs, setTutorNotifs] = useState([]);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  // Language States
+  const [isLangMenuExpanded, setIsLangMenuExpanded] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('UK English');
+  const t = (key) => {
+    const langDict = translations[selectedLanguage] || translations['UK English'];
+    return langDict[key] || translations['UK English'][key] || key;
+  };
+  const dir = selectedLanguage === 'Urdu (اردو)' ? 'rtl' : 'ltr';
+
+  // Auth States
+  const [isLogin, setIsLogin] = useState(false);
+  const [role, setRole] = useState('student');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', mobile: '', address: '', password: '' });
+
+  // Dashboard & Modal States
+  const [activePage, setActivePage] = useState('dashboard'); // 'dashboard' or 'demoClasses'
+  const [selectedLevel, setSelectedLevel] = useState(null); 
+  const [selectedGroup, setSelectedGroup] = useState(null); 
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedTutor, setSelectedTutor] = useState(null); 
+  const [activeVideoModal, setActiveVideoModal] = useState(null); // The YouTube-style Video Page
+  const [newCommentText, setNewCommentText] = useState('');
+  
+  // Tutor Onboarding (KYC) States
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [tutorProfile, setTutorProfile] = useState({ certName: '', homeAddress: '', postalCode: '', currentAddress: '', varsityMail: '', personalMail: '', age: '', gender: '', university: '', prevTuitions: '', achievements: '', agreeTerms: false });
+  const [idType, setIdType] = useState('studentId');
+  const [idFront, setIdFront] = useState(null);
+  const [idBack, setIdBack] = useState(null);
+
+  // Tutor Teaching States
+  const [tutorSelectedSubjects, setTutorSelectedSubjects] = useState([]);
+  const [tutorVideos, setTutorVideos] = useState({});
+
+  // Tutor Membership & Messaging States
+  const [hasMembership, setHasMembership] = useState(false);
+  const [activeChat, setActiveChat] = useState(null);
+
+  // Search & Location States
+  const [isNearbyActive, setIsNearbyActive] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
+  // Derived Filtered & Sorted Tutors
+  const displayedTutors = [...mockTutors]
+    .filter(t => selectedSubject ? t.subjects.includes(selectedSubject) : true)
+    .sort((a, b) => {
+      if (isNearbyActive) {
+        return a.distance - b.distance || b.rating - a.rating;
+      }
+      return b.rating - a.rating; // Default to rating
+    });
+
+  const handleLevelChange = (level) => { setSelectedLevel(level); setSelectedSubject(null); };
+  const handleGroupChange = (group) => { setSelectedGroup(group); setSelectedSubject(null); };
+  const handleInputChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
+  
+  const handleTutorProfileChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setTutorProfile(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 800)); 
+    setIsAuthenticated(true);
+    setIsSubmitting(false);
+  };
+
+  const roleConfig = {
+    student: { icon: <GraduationCap size={20} />, label: t('student'), color: 'bg-blue-500', text: 'text-blue-500', border: 'border-blue-500', bgLight: 'bg-blue-50', message: t('msgStudent') },
+    guardian: { icon: <Users size={20} />, label: t('guardian'), color: 'bg-indigo-500', text: 'text-indigo-500', border: 'border-indigo-500', bgLight: 'bg-indigo-50', message: t('msgGuardian') },
+    tutor: { icon: <BookOpen size={20} />, label: t('tutor'), color: 'bg-emerald-500', text: 'text-emerald-500', border: 'border-emerald-500', bgLight: 'bg-emerald-50', message: t('msgTutor') }
+  };
+
+  const scrollTutors = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 320;
+      let offset = direction === 'left' ? -scrollAmount : scrollAmount;
+      if (dir === 'rtl') offset = direction === 'left' ? scrollAmount : -scrollAmount;
+      scrollContainerRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  // --- ACTIONS ---
+  const handleTutorVideoUpload = (item, file) => {
+    if (!file) return;
+    
+    const subId = `${item.level}-${item.subject}`;
+
+    const videoElement = document.createElement('video');
+    videoElement.preload = 'metadata';
+
+    videoElement.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(videoElement.src);
+      const duration = videoElement.duration;
+      
+      // Limit: strictly under 20 minutes (1200 seconds)
+      if (duration > 1200) {
+        alert(t('videoTooLongAlert'));
+        return;
+      }
+
+      setTutorVideos(prev => ({...prev, [subId]: file}));
+      
+      const newVid = {
+        id: `v_${Date.now()}`, tutorId: 99, tutorName: formData.name || 'New Tutor',
+        subject: item.subject, title: `${item.level} ${item.subject} Masterclass`,
+        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400&h=250',
+        rating: 0, reactions: 0, comments: []
+      };
+      setGlobalVideos(prev => [newVid, ...prev]);
+    };
+    videoElement.src = URL.createObjectURL(file);
+  };
+
+  const handlePostComment = () => {
+    if(!newCommentText.trim()) return;
+
+    if (role === 'tutor' && hasForbiddenContent(newCommentText)) {
+      alert(t('contentBlockedAlert'));
+      return;
+    }
+
+    const updatedVideos = globalVideos.map(v => {
+      if(v.id === activeVideoModal.id) {
+        const newComment = { id: `c_${Date.now()}`, role: role, author: formData.name || roleConfig[role].label, text: newCommentText };
+        return { ...v, comments: [...v.comments, newComment] };
+      }
+      return v;
+    });
+
+    setGlobalVideos(updatedVideos);
+    setActiveVideoModal(updatedVideos.find(v => v.id === activeVideoModal.id)); 
+    setNewCommentText('');
+
+    if(role !== 'tutor') {
+      const notifMsg = t('newCommentNotif').replace('{sub}', activeVideoModal.subject);
+      setTutorNotifs(prev => [{ id: Date.now(), text: notifMsg, videoId: activeVideoModal.id, unread: true }, ...prev]);
+    }
+  };
+
+  const handleReact = (videoId) => {
+    const updated = globalVideos.map(v => v.id === videoId ? { ...v, reactions: v.reactions + 1 } : v);
+    setGlobalVideos(updated);
+    if(activeVideoModal?.id === videoId) setActiveVideoModal(updated.find(v => v.id === videoId));
+  };
+
+
+  // ==========================================
+  // 5. RENDERING 
+  // ==========================================
+  
+  // VIEW A: YOUTUBE STYLE FULL PAGE OVERLAY (Highest Priority)
+  if (isAuthenticated && activeVideoModal) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-slate-50 overflow-y-auto animate-in fade-in duration-300" dir={dir}>
+        
+        {/* Top Navbar */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-md shadow-sm p-4 flex justify-between items-center z-50 px-4 md:px-8 border-b border-slate-200">
+           <div className="flex items-center gap-2 text-rose-600 font-bold text-xl">
+             <Video size={24} /> <span>{t('demoFeed')}</span>
+           </div>
+           <button onClick={() => setActiveVideoModal(null)} className="p-2 bg-slate-100 text-slate-500 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors flex items-center justify-center shadow-sm border border-slate-200 hover:border-red-200">
+             <X size={20} className="stroke-[3]" />
+           </button>
+        </div>
+
+        <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-8">
+          
+          {/* Main Video Player & Details */}
+          <div className="w-full lg:w-2/3 flex flex-col">
+            <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden relative shadow-2xl mb-6 group border border-slate-800">
+               <img src={activeVideoModal.thumbnail} className="w-full h-full object-cover opacity-60" />
+               <div className="absolute inset-0 flex items-center justify-center">
+                 <PlayCircle size={80} className="text-white opacity-80 cursor-pointer group-hover:scale-110 group-hover:opacity-100 transition-all drop-shadow-2xl" />
+               </div>
+               <div className={`absolute bottom-4 ${dir === 'rtl' ? 'right-4' : 'left-4'} bg-rose-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg`}>20:00</div>
+            </div>
+            
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-3">{activeVideoModal.title}</h1>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-5 mb-8 gap-4">
+              {/* --- CLICKABLE TUTOR INFO --- */}
+              <div 
+                className="flex items-center gap-4 cursor-pointer group"
+                onClick={() => {
+                  const tutor = mockTutors.find(t => t.id === activeVideoModal.tutorId);
+                  if (tutor) {
+                    setSelectedTutor(tutor);
+                    setActiveVideoModal(null);
+                    setActivePage('dashboard');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+              >
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center font-bold text-white text-2xl shadow-md border-2 border-white group-hover:scale-105 group-hover:shadow-lg transition-all">
+                  {activeVideoModal.tutorName.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-bold text-lg text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">
+                    {activeVideoModal.tutorName}
+                  </p>
+                  <p className="text-sm font-semibold text-slate-500">{t(activeVideoModal.subject)} {t('tutor')}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-full border border-slate-200">
+                <button onClick={() => handleReact(activeVideoModal.id)} className="flex items-center gap-2 bg-white px-5 py-2 rounded-full shadow-sm transition-colors font-bold text-slate-700 hover:text-rose-600">
+                  <Heart size={18} className={activeVideoModal.reactions > 0 ? "fill-rose-500 text-rose-500" : ""} /> {activeVideoModal.reactions}
+                </button>
+                {role !== 'tutor' && (
+                  <div className="flex items-center gap-1 cursor-pointer bg-white px-4 py-2 rounded-full shadow-sm" onClick={() => alert(t('ratingAlert'))}>
+                    {[1,2,3,4,5].map(star => <Star key={star} size={16} className="text-amber-400 hover:fill-amber-500 hover:scale-110 transition-all" />)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Comments Section */}
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-8">
+              <h3 className="font-black text-xl mb-6 flex items-center gap-2 text-slate-800"><MessageSquare size={22} className="text-blue-500"/> {t('comments')} <span className="text-slate-400 text-base font-medium">({activeVideoModal.comments.length})</span></h3>
+              
+              <div className="flex gap-4 mb-8">
+                 <div className="w-12 h-12 bg-slate-100 border border-slate-200 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-slate-600">{formData.name ? formData.name.charAt(0) : roleConfig[role].label.charAt(0)}</div>
+                 <div className="flex-1 flex flex-col gap-2">
+                   {role === 'tutor' && (
+                     <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                       <ShieldAlert size={16} className="shrink-0"/>
+                       <span>Protecting student privacy. Sharing personal contact info or links will be blocked.</span>
+                     </div>
+                   )}
+                   <div className="flex gap-2">
+                     <input 
+                       type="text" value={newCommentText} onChange={(e) => setNewCommentText(e.target.value)}
+                       onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
+                       placeholder={role === 'tutor' ? t('reply') : t('writeComment')} 
+                       className="flex-1 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-5 py-3 text-sm outline-none transition-all"
+                     />
+                     <button onClick={handlePostComment} disabled={!newCommentText.trim()} className="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+                        <Send size={18} className={dir === 'rtl' ? '-scale-x-100' : ''}/> <span className="hidden sm:block">{t('post')}</span>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+
+              <div className="space-y-4">
+                {activeVideoModal.comments.length === 0 ? (
+                  <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <MessageSquare size={32} className="mx-auto text-slate-300 mb-2"/>
+                    <p className="text-slate-500 font-medium">No comments yet. Be the first to start the discussion!</p>
+                  </div>
+                ) : (
+                  activeVideoModal.comments.map(comment => (
+                    <div key={comment.id} className={`flex gap-4 p-4 rounded-2xl ${comment.role === 'tutor' ? 'bg-indigo-50 border border-indigo-100 ml-4 sm:ml-12' : 'bg-slate-50 border border-slate-100'}`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm ${comment.role === 'tutor' ? 'bg-indigo-500' : 'bg-slate-400'}`}>
+                        {comment.author.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-slate-800">{comment.author}</span>
+                          {comment.role === 'tutor' && <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border border-indigo-200">Tutor</span>}
+                        </div>
+                        <p className="text-slate-700 text-sm leading-relaxed">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Recommended Videos Sidebar */}
+          <div className="w-full lg:w-1/3 flex flex-col gap-4">
+             <h3 className="font-black text-xl text-slate-800 mb-2 flex items-center gap-2">
+               <Video className="text-rose-500" size={20}/> {t('upNext')}
+             </h3>
+             <div className="flex flex-col gap-4">
+               {globalVideos.filter(v => v.id !== activeVideoModal.id).map(v => (
+                 <div key={v.id} onClick={() => { setActiveVideoModal(null); setTimeout(() => setActiveVideoModal(v), 50); window.scrollTo(0,0); }} className="flex gap-4 cursor-pointer group bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all">
+                   <div className="w-40 h-24 bg-slate-900 rounded-xl overflow-hidden relative shrink-0">
+                     <img src={v.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-300" />
+                     <PlayCircle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-100 transition-all scale-125" />
+                     <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">20:00</div>
+                   </div>
+                   <div className="flex flex-col py-1 pr-2 justify-center">
+                     <h4 className="font-bold text-sm text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug">{v.title}</h4>
+                     <p className="text-xs font-medium text-slate-500 mt-1.5">{v.tutorName}</p>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">{t(v.subject)}</p>
+                   </div>
+                 </div>
+               ))}
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // VIEW B: NORMAL DASHBOARD VIEW
+  if (isAuthenticated) {
+    return (
+      <div className="relative min-h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden" dir={dir}>
+        <FloatingBackground />
+        
+        <div className="relative z-10 h-full flex flex-col">
+          <nav className="bg-white/90 backdrop-blur-md shadow-sm px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <Menu size={24} className="text-slate-700" />
+              </button>
+              <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <GraduationCap className={roleConfig[role].text} size={24} />
+                Tuition Hub
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              {role === 'tutor' && (
+                <div className="relative">
+                  <button onClick={() => setIsNotifOpen(!isNotifOpen)} className="p-2 rounded-full hover:bg-slate-100 relative transition-colors">
+                    <Bell size={22} className="text-slate-600" />
+                    {tutorNotifs.some(n => n.unread) && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                  </button>
+                  {isNotifOpen && (
+                    <div className={`absolute top-full mt-2 ${dir === 'rtl' ? 'left-0' : 'right-0'} w-72 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50`}>
+                      <div className="p-3 bg-slate-50 border-b border-slate-100 font-bold text-slate-700">{t('notifications')}</div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {tutorNotifs.length === 0 ? (
+                          <div className="p-4 text-center text-sm text-slate-500">{t('noNotifs')}</div>
+                        ) : (
+                          tutorNotifs.map(n => (
+                            <button key={n.id} onClick={() => {
+                              const vid = globalVideos.find(v => v.id === n.videoId);
+                              if(vid) setActiveVideoModal(vid);
+                              setTutorNotifs(prev => prev.map(notif => notif.id === n.id ? {...notif, unread: false} : notif));
+                              setIsNotifOpen(false);
+                            }} className={`w-full text-left p-3 border-b border-slate-50 text-sm hover:bg-slate-50 transition-colors ${n.unread ? 'bg-blue-50/50 font-semibold' : 'text-slate-600'}`}>
+                              {n.text}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className={`hidden md:block px-3 py-1 rounded-full text-sm font-medium ${roleConfig[role].bgLight} ${roleConfig[role].text}`}>
+                {roleConfig[role].label} {t('portal')}
+              </div>
+            </div>
+          </nav>
+
+          {/* Sidebar Menu */}
+          {isMenuOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsMenuOpen(false)}></div>}
+          <div className={`fixed top-0 ${dir === 'rtl' ? 'right-0 translate-x-full' : 'left-0 -translate-x-full'} h-full w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : ''}`}>
+             <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-800">{t('menu')}</h2>
+              <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:bg-slate-100 rounded-lg"><X size={20} className="text-slate-500" /></button>
+            </div>
+            <div className="py-4 flex flex-col h-[calc(100%-70px)] overflow-y-auto">
+              <div className="flex-1 space-y-1 px-3">
+                {role === 'tutor' && (
+                  <>
+                    <button onClick={() => { setActivePage('dashboard'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'dashboard' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-600'}`}>
+                      <Grid size={20} /> <span>{t('dashboardPage')}</span>
+                    </button>
+                    <button onClick={() => { setActivePage('messages'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'messages' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-600'}`}>
+                      <div className="relative">
+                        <MessageSquare size={20} />
+                        {!hasMembership && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                      </div>
+                      <span>{t('messages')}</span>
+                    </button>
+                    <button onClick={() => { setActivePage('updateProfile'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'updateProfile' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-600'}`}>
+                      <User size={20} /> <span>{t('updateProfile')}</span>
+                    </button>
+                    <div className="my-2 border-t border-slate-100"></div>
+                  </>
+                )}
+                {(role === 'student' || role === 'guardian') && (
+                  <>
+                    <button onClick={() => { setActivePage('dashboard'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'dashboard' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'}`}>
+                      <Grid size={20} /> <span>{t('dashboardPage')}</span>
+                    </button>
+                    <button onClick={() => { setActivePage('demoClasses'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'demoClasses' ? 'bg-rose-50 text-rose-700' : 'text-slate-600 hover:bg-slate-50 hover:text-rose-600'}`}>
+                      <Video size={20} /> <span>{t('allDemoClasses')}</span>
+                    </button>
+                    <button onClick={() => { setActivePage('findTutor'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'findTutor' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`}>
+                      <Search size={20} /> <span>{t('findTutor')}</span>
+                    </button>
+                    <div className="my-2 border-t border-slate-100"></div>
+                  </>
+                )}
+                
+                {/* Language Menu */}
+                <div className="flex flex-col">
+                  <button onClick={() => setIsLangMenuExpanded(!isLangMenuExpanded)} className="w-full flex items-center justify-between px-3 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg text-left">
+                    <div className="flex items-center gap-3"><Globe size={20} /> <span className="font-medium">{t('language')}</span></div>
+                    <ChevronRight size={16} className={`transform transition-transform ${isLangMenuExpanded ? 'rotate-90' : ''}`} />
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ${isLangMenuExpanded ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className={`px-3 py-2 space-y-1 bg-slate-50/50 rounded-lg mx-2 border border-slate-100 ${dir === 'rtl' ? 'pr-11' : 'pl-11'}`}>
+                      {supportedLanguages.map(lang => (
+                        <button key={lang} onClick={() => { setSelectedLanguage(lang); setIsLangMenuExpanded(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md ${selectedLanguage === lang ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-200'}`}>{lang}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Support & Terms */}
+                <button onClick={() => { setActivePage('support'); setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg font-semibold text-left transition-colors ${activePage === 'support' ? 'bg-orange-50 text-orange-700' : 'text-slate-600 hover:bg-slate-50 hover:text-orange-600'}`}>
+                  <HelpCircle size={20} /> <span>{t('support')}</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-3 py-3 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg text-left"><FileText size={20} /> <span className="font-medium">{t('terms')}</span></button>
+              </div>
+              
+              {/* Logout */}
+              <div className="px-4 border-t border-slate-100 pt-4">
+                <button onClick={() => { setIsAuthenticated(false); setIsMenuOpen(false); }} className="w-full flex items-center gap-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg text-left font-medium"><LogOut size={20} /> {t('logout')}</button>
+              </div>
+            </div>
+          </div>
+
+          {/* MAIN CONTENT */}
+          <main className="p-6 max-w-5xl mx-auto flex-1 w-full relative z-10 overflow-y-auto pb-24">
+            
+            {/* Tutor CV Overlay View */}
+            {selectedTutor && (
+               <div className="animate-in fade-in zoom-in-95 duration-300 mb-12">
+                <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden relative border border-slate-100">
+                  <button onClick={() => setSelectedTutor(null)} className={`absolute top-4 ${dir === 'rtl' ? 'left-4' : 'right-4'} p-2.5 bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 rounded-full z-10`}><X size={24} /></button>
+                  <div className="flex flex-col md:flex-row">
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 flex flex-col items-center justify-center md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200">
+                      <img src={selectedTutor.image} className="w-40 h-40 rounded-full border-4 border-white shadow-lg mb-5 object-cover" />
+                      <h2 className="text-2xl font-bold text-slate-800 text-center">{selectedTutor.name}</h2>
+                      
+                      <div className="flex items-center gap-1 mt-3 text-amber-500 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-100">
+                         <Star size={18} fill="currentColor" />
+                         <span className="font-bold text-lg">{selectedTutor.rating}</span>
+                         <span className="text-slate-500 text-sm ml-1">({selectedTutor.reviews} {t('reviews')})</span>
+                      </div>
+
+                      <div className="mt-8 text-center bg-white/60 px-6 py-4 rounded-2xl backdrop-blur-sm border border-white/50 w-full shadow-sm">
+                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{t('hourlyRate')}</p>
+                         <p className="text-3xl font-black text-blue-600">{selectedTutor.rate}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-8 md:w-2/3 flex flex-col">
+                      <h3 className="text-lg font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{t('aboutMe')}</h3>
+                      <p className="text-slate-600 mb-6 leading-relaxed">{selectedTutor.bio}</p>
+                      
+                      <h3 className="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                        <FileText size={20} className="text-indigo-500"/> {t('moreDetails')}
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('experience')}</p>
+                            <p className="font-semibold text-slate-700 flex items-center gap-2"><Briefcase size={18} className="text-blue-500"/> {selectedTutor.experience}</p>
+                         </div>
+                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('currentUniversity')}</p>
+                            <p className="font-semibold text-slate-700 flex items-center gap-2"><Building2 size={18} className="text-emerald-500"/> {selectedTutor.university}</p>
+                         </div>
+                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 sm:col-span-2">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{t('achievementsLife')}</p>
+                            <p className="font-semibold text-slate-700 flex items-start gap-2"><Award size={18} className="text-amber-500 shrink-0 mt-0.5"/> {selectedTutor.achievements}</p>
+                         </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+                        <button onClick={() => alert("Booking request sent!")} className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-blue-600 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                          <CheckSquare size={20}/> {t('bookMe')}
+                        </button>
+                        <button onClick={() => alert("Message interface opened!")} className="flex-1 py-4 bg-indigo-50 text-indigo-700 rounded-2xl font-bold text-lg hover:bg-indigo-100 transition-all flex items-center justify-center gap-2 border border-indigo-100 hover:-translate-y-1 hover:shadow-md">
+                          <MessageSquare size={20}/> {t('messageTutor')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- DEDICATED DEMO CLASSES PAGE --- */}
+            {!selectedTutor && activePage === 'demoClasses' && (
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-gradient-to-r from-rose-500 to-orange-500 p-8 rounded-3xl text-white shadow-lg mb-8">
+                    <h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Video size={32} /> {t('allDemoClasses')}</h2>
+                    <p className="text-white/90 text-lg">Watch free masterclasses from our top-rated educators before booking.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                    {globalVideos.map(video => (
+                      <div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}>
+                        <div className="relative h-44 bg-slate-900">
+                          <img src={video.thumbnail} className="w-full h-full object-cover opacity-70 group-hover:scale-105 group-hover:opacity-90 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                             <PlayCircle size={56} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all drop-shadow-xl" />
+                          </div>
+                          <span className="absolute top-3 left-3 bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-sm">{t(video.subject)}</span>
+                          <span className="absolute bottom-3 right-3 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">20:00</span>
+                        </div>
+                        <div className="p-5 flex-1 flex flex-col">
+                          <h4 className="font-bold text-slate-800 line-clamp-2 text-lg leading-tight mb-2 group-hover:text-blue-600 transition-colors">{video.title}</h4>
+                          <p className="text-sm font-semibold text-slate-500 mb-4">{video.tutorName}</p>
+                          <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                            <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+                              <span className="flex items-center gap-1.5"><Heart size={16} className={video.reactions > 0 ? "fill-rose-500 text-rose-500" : ""} /> {video.reactions}</span>
+                              <span className="flex items-center gap-1.5"><MessageSquare size={16} /> {video.comments.length}</span>
+                            </div>
+                            <span className="text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1.5 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">{t('watchNow')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            )}
+
+            {/* --- DEDICATED FIND TUTOR PAGE --- */}
+            {!selectedTutor && activePage === 'findTutor' && (
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 rounded-3xl text-white shadow-lg mb-8">
+                    <h2 className="text-3xl font-black mb-2 flex items-center gap-2"><Search size={32} /> {t('findTutor')}</h2>
+                    <p className="text-white/90 text-lg">{t('findTutorDesc')}</p>
+                  </div>
+                  
+                  {/* Search Form */}
+                  <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')} {t('Level')}</option><option value="HSC">{t('HSC')} {t('Level')}</option></select>
+                        <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select>
+                        <select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4">
+                       {selectedSubject && <button onClick={() => alert(t('searchAlert').replace('{sub}', t(selectedSubject)))} className="flex-1 py-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors">{t('search')}</button>}
+                       
+                       {/* Location Detection Toggle */}
+                       <button 
+                         onClick={() => {
+                           if(!isNearbyActive) {
+                             setIsLocating(true);
+                             setTimeout(() => { setIsLocating(false); setIsNearbyActive(true); }, 1500);
+                           } else {
+                             setIsNearbyActive(false);
+                           }
+                         }} 
+                         className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border-2 ${isNearbyActive ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-300'}`}
+                       >
+                         {isLocating ? <span className="flex items-center gap-2"><div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div> {t('detectingLoc')}</span> : <><Navigation size={20} className={isNearbyActive ? 'text-emerald-500' : 'text-slate-400'} /> {t('findNearby')}</>}
+                       </button>
+                    </div>
+                  </div>
+
+                  {/* All Tutors Grid */}
+                  <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Users className="text-blue-500" /> {t('allTutors')}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                    {displayedTutors.map(tutor => {
+                      const tutorVideoData = globalVideos.find(v => v.id === tutor.demoVideoId);
+                      return (
+                        <div key={tutor.id} className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col group hover:shadow-xl transition-shadow">
+                          
+                          {/* Video Cover Top Half */}
+                          <div className="relative h-40 w-full bg-slate-900 overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveVideoModal(tutorVideoData || globalVideos[0]); }}>
+                            <img src={tutorVideoData?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-80 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                            <div className={`absolute bottom-3 ${dir === 'rtl' ? 'right-3' : 'left-3'} right-16 flex flex-col items-start gap-1`}>
+                              <span className="text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded shadow-sm">{t(tutorVideoData?.subject || tutor.subjects[0])}</span>
+                              <h4 className="text-white text-sm font-bold line-clamp-1 drop-shadow-md">{tutorVideoData?.title || 'Demo Masterclass'}</h4>
+                            </div>
+                            <PlayCircle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-100 transition-all scale-150 drop-shadow-2xl" />
+                          </div>
+
+                          {/* Tutor Info Bottom Half */}
+                          <div className="p-5 pt-12 flex-1 text-center relative cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => setSelectedTutor(tutor)}>
+                            <img src={tutor.image} className={`w-20 h-20 object-cover rounded-full border-4 border-white absolute -top-10 ${dir === 'rtl' ? 'left-4' : 'right-4'} shadow-md bg-white`} />
+                            <div className="flex flex-col h-full justify-between">
+                              <div className="text-left">
+                                <h4 className="text-lg font-bold text-slate-800">{tutor.name}</h4>
+                                <div className="flex items-center gap-1 mt-1 text-amber-500"><Star size={16} fill="currentColor" /><span className="font-bold text-sm">{tutor.rating}</span><span className="text-slate-400 text-xs ml-1">({tutor.reviews} {t('reviews')})</span></div>
+                                <div className="text-xs font-semibold text-slate-500 flex items-center gap-1 mt-2">
+                                   <MapPin size={12} className="text-emerald-500 shrink-0" /> 
+                                   <span className="truncate">{tutor.distance} {t('kmAway')} • {tutor.locationName}</span>
+                                </div>
+                              </div>
+                              <button className="mt-6 w-full py-3 bg-slate-100 text-slate-800 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-colors border border-slate-200">View Profile</button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {displayedTutors.length === 0 && (
+                       <div className="col-span-full py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                          No tutors found for this subject in your area. Try adjusting your search!
+                       </div>
+                    )}
+                  </div>
+               </div>
+            )}
+
+            {/* --- SUPPORT SYSTEM PAGE --- */}
+            {!selectedTutor && activePage === 'support' && (
+               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-8 rounded-3xl text-white shadow-lg mb-8">
+                    <h2 className="text-3xl font-black mb-2 flex items-center gap-2"><HelpCircle size={32} /> {t('supportTitle')}</h2>
+                    <p className="text-white/90 text-lg">{t('supportDesc')}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-12">
+                     {/* Contact Admin Form */}
+                     <div className="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+                        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><MessageCircle className="text-orange-500"/> {t('contactAdmin')}</h3>
+                        <form onSubmit={(e) => { e.preventDefault(); alert("Your message has been sent to the Admin team!"); }} className="space-y-4">
+                           <div className="relative"><User className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-4' : 'left-4'}`} size={18} /><input type="text" placeholder={t('name')} required className={`w-full p-4 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-slate-50 transition-all ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'}`} /></div>
+                           <div className="relative"><Mail className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-4' : 'left-4'}`} size={18} /><input type="email" placeholder={t('email')} required className={`w-full p-4 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-slate-50 transition-all ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'}`} /></div>
+                           <div className="relative"><FileText className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-4' : 'left-4'}`} size={18} /><input type="text" placeholder={t('subjectLabel')} required className={`w-full p-4 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-slate-50 transition-all ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'}`} /></div>
+                           <textarea rows="5" placeholder={t('messageLabel')} required className="w-full p-4 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none bg-slate-50 resize-none transition-all"></textarea>
+                           <button type="submit" className="w-full py-4 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                             <Send size={18} className={dir === 'rtl' ? '-scale-x-100' : ''}/> {t('sendMsgBtn')}
+                           </button>
+                        </form>
+                     </div>
+
+                     {/* Contact Information & Socials */}
+                     <div className="space-y-6">
+                        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                           <h3 className="text-xl font-bold text-slate-800 mb-6">{t('contactInfo')}</h3>
+                           <div className="space-y-6">
+                              <div className="flex items-center gap-4 group">
+                                 <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-colors shadow-sm"><Phone size={24} /></div>
+                                 <div><p className="text-sm text-slate-500 font-semibold mb-0.5">WhatsApp / Phone</p><p className="font-bold text-slate-800 text-lg">+880 1700-000000</p></div>
+                              </div>
+                              <div className="flex items-center gap-4 group">
+                                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-blue-500 group-hover:text-white transition-colors shadow-sm"><Mail size={24} /></div>
+                                 <div><p className="text-sm text-slate-500 font-semibold mb-0.5">Email Us</p><p className="font-bold text-slate-800 text-lg">support@tuitionhub.com</p></div>
+                              </div>
+                              <div className="flex items-center gap-4 group">
+                                 <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-colors shadow-sm"><MapPin size={24} /></div>
+                                 <div><p className="text-sm text-slate-500 font-semibold mb-0.5">Address</p><p className="font-bold text-slate-800 text-lg">Banani, Dhaka, Bangladesh</p></div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+                           <h3 className="text-xl font-bold text-slate-800 mb-6">{t('followUs')}</h3>
+                           <div className="flex gap-4">
+                              <button className="flex-1 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center hover:bg-blue-600 hover:text-white hover:-translate-y-1 hover:shadow-md transition-all"><Facebook size={24}/></button>
+                              <button className="flex-1 h-14 bg-pink-50 text-pink-600 rounded-2xl flex items-center justify-center hover:bg-pink-600 hover:text-white hover:-translate-y-1 hover:shadow-md transition-all"><Instagram size={24}/></button>
+                              <button className="flex-1 h-14 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center hover:bg-sky-600 hover:text-white hover:-translate-y-1 hover:shadow-md transition-all"><Linkedin size={24}/></button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {/* Dashboard Default Views */}
+            {!selectedTutor && activePage === 'dashboard' && (
+              <>
+                <div className={`p-8 rounded-2xl ${roleConfig[role].color} text-white shadow-lg`}>
+                  <h2 className="text-3xl font-bold mb-2">{t('welcome')}</h2>
+                  <p className="text-white/90 text-lg">{roleConfig[role].message}</p>
+                </div>
+                
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* --- STUDENT / GUARDIAN DASHBOARD --- */}
+                  {(role === 'student' || role === 'guardian') ? (
+                    <>
+                      {/* Search */}
+                      <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100 col-span-1 md:col-span-2">
+                        <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Search className="text-blue-500" /> {t('findTutor')}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white"><option value="">{t('step1')}</option><option value="SSC">{t('SSC')} {t('Level')}</option><option value="HSC">{t('HSC')} {t('Level')}</option></select>
+                            <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50"><option value="">{t('step2')}</option>{selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}</select>
+                            <select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject || ''} className="w-full py-3 px-4 rounded-xl border border-slate-200 focus:border-blue-500 bg-white disabled:opacity-50"><option value="">{t('step3')}</option>{selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}</select>
+                        </div>
+                        {selectedSubject && <button onClick={() => alert(t('searchAlert').replace('{sub}', t(selectedSubject)))} className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold">{t('search')}</button>}
+                      </div>
+
+                      {/* Video Feed */}
+                      <div className="col-span-1 md:col-span-2 mt-4">
+                        <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoFeed')}</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {globalVideos.map(video => (
+                            <div key={video.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer" onClick={() => setActiveVideoModal(video)}>
+                              <div className="relative h-40 bg-slate-200">
+                                <img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                   <PlayCircle size={48} className="text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />
+                                </div>
+                                <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2 py-1 rounded-md">{t(video.subject)}</span>
+                              </div>
+                              <div className="p-4 flex-1 flex flex-col">
+                                <h4 className="font-bold text-slate-800 line-clamp-1">{video.title}</h4>
+                                <p className="text-sm text-slate-500 mb-4">{video.tutorName}</p>
+                                <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100">
+                                  <div className="flex items-center gap-3 text-slate-500 text-sm">
+                                    <span className="flex items-center gap-1"><Heart size={16} className={video.reactions > 0 ? "fill-rose-500 text-rose-500" : ""} /> {video.reactions}</span>
+                                    <span className="flex items-center gap-1"><MessageSquare size={16} /> {video.comments.length}</span>
+                                  </div>
+                                  <span className="text-blue-600 font-semibold text-sm">{t('watchNow')}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Tutor Profile Cards Grid */}
+                      <div className="col-span-1 md:col-span-2 mt-4 relative">
+                        <div className="flex items-center justify-between mb-6">
+                          <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><Star className="text-amber-500" fill="currentColor" /> {t('topTutors')}</h3>
+                          <div className="flex gap-2">
+                            <button onClick={() => scrollTutors('left')} className="p-2 rounded-full bg-white shadow-sm hover:shadow-md hover:bg-slate-50 transition-all border border-slate-200"><ChevronLeft size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /></button>
+                            <button onClick={() => scrollTutors('right')} className="p-2 rounded-full bg-white shadow-sm hover:shadow-md hover:bg-slate-50 transition-all border border-slate-200"><ChevronRight size={20} className={dir === 'rtl' ? 'rotate-180' : ''} /></button>
+                          </div>
+                        </div>
+
+                        <div ref={scrollContainerRef} className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-6 [&::-webkit-scrollbar]:hidden">
+                          {mockTutors.map(tutor => {
+                            const tutorVideoData = globalVideos.find(v => v.id === tutor.demoVideoId);
+                            return (
+                              <div key={tutor.id} className="min-w-[280px] sm:min-w-[300px] snap-center shrink-0 bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden flex flex-col group hover:shadow-xl transition-shadow">
+                                
+                                {/* Video Cover Top Half */}
+                                <div className="relative h-40 w-full bg-slate-900 overflow-hidden cursor-pointer" onClick={(e) => { e.stopPropagation(); setActiveVideoModal(tutorVideoData || globalVideos[0]); }}>
+                                  <img src={tutorVideoData?.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-80 transition-all duration-500" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                                  <div className={`absolute bottom-3 ${dir === 'rtl' ? 'right-3' : 'left-3'} right-16 flex flex-col items-start gap-1`}>
+                                    <span className="text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded shadow-sm">{t(tutorVideoData?.subject || tutor.subjects[0])}</span>
+                                    <h4 className="text-white text-sm font-bold line-clamp-1 drop-shadow-md">{tutorVideoData?.title || 'Demo Masterclass'}</h4>
+                                  </div>
+                                  <PlayCircle className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-100 transition-all scale-150 drop-shadow-2xl" />
+                                </div>
+
+                                {/* Tutor Info Bottom Half */}
+                                <div className="p-5 pt-12 flex-1 text-center relative cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => setSelectedTutor(tutor)}>
+                                  <img src={tutor.image} className={`w-20 h-20 object-cover rounded-full border-4 border-white absolute -top-10 ${dir === 'rtl' ? 'left-4' : 'right-4'} shadow-md bg-white`} />
+                                  <div className="flex flex-col h-full justify-between">
+                                    <div className="text-left">
+                                      <h4 className="text-lg font-bold text-slate-800">{tutor.name}</h4>
+                                      <div className="flex items-center gap-1 mt-1 text-amber-500"><Star size={16} fill="currentColor" /><span className="font-bold text-sm">{tutor.rating}</span><span className="text-slate-400 text-xs ml-1">({tutor.reviews} {t('reviews')})</span></div>
+                                    </div>
+                                    <button className="mt-6 w-full py-3 bg-slate-100 text-slate-800 rounded-xl font-bold hover:bg-blue-600 hover:text-white transition-colors border border-slate-200">View Profile</button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    // --- TUTOR DASHBOARD ---
+                    <>
+                      {(!isProfileComplete || activePage === 'updateProfile') ? (
+                        /* FULL KYC ONBOARDING & UPDATE PROFILE FORM */
+                        <div className="col-span-1 md:col-span-2 bg-white/95 backdrop-blur-sm p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                          
+                          {!isProfileComplete ? (
+                            <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-8">
+                              <AlertCircle className="shrink-0" size={24} />
+                              <p className="font-semibold">{t('mandatoryProfileMsg')}</p>
+                            </div>
+                          ) : (
+                            <div className="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-xl flex items-center gap-3 mb-8">
+                              <User className="shrink-0" size={24} />
+                              <p className="font-semibold">{t('keepProfileUpdated')}</p>
+                            </div>
+                          )}
+                          
+                          <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
+                            <User className="text-emerald-500" /> {!isProfileComplete ? t('createProfileTitle') : t('updateProfile')}
+                          </h3>
+                          
+                          <form onSubmit={(e) => { 
+                            e.preventDefault(); 
+                            setIsProfileComplete(true);
+                            if(activePage === 'updateProfile') {
+                               alert(t('profileUpdatedAlert'));
+                               setActivePage('dashboard');
+                            }
+                          }} className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              
+                              {/* Left Col: Personal Details */}
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('certName')}</label>
+                                  <div className="relative"><User className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="certName" value={tutorProfile.certName} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('age')}</label>
+                                    <div className="relative"><Calendar className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="number" name="age" value={tutorProfile.age} onChange={handleTutorProfileChange} required min="18" className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                  </div>
+                                  <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('gender')}</label>
+                                    <select name="gender" value={tutorProfile.gender} onChange={handleTutorProfileChange} required className="w-full py-3 px-4 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 text-slate-700 appearance-none">
+                                      <option value="">{t('selectGender')}</option><option value="male">{t('male')}</option><option value="female">{t('female')}</option><option value="other">{t('other')}</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('homeAddress')}</label>
+                                  <div className="relative"><MapPin className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="homeAddress" value={tutorProfile.homeAddress} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('currentAddress')}</label>
+                                  <div className="relative"><MapPin className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="currentAddress" value={tutorProfile.currentAddress} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('postalCode')}</label>
+                                  <div className="relative"><MapPin className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="postalCode" value={tutorProfile.postalCode} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                              </div>
+
+                              {/* Right Col: Education & Contact */}
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('personalMail')}</label>
+                                  <div className="relative"><Mail className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="email" name="personalMail" value={tutorProfile.personalMail} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('varsityMail')}</label>
+                                  <div className="relative"><Mail className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="email" name="varsityMail" value={tutorProfile.varsityMail} onChange={handleTutorProfileChange} required className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('university')}</label>
+                                  <div className="relative"><Building2 className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="university" value={tutorProfile.university} onChange={handleTutorProfileChange} required placeholder="e.g. Dhaka University" className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('prevTuitions')}</label>
+                                  <div className="relative"><Users className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="number" name="prevTuitions" value={tutorProfile.prevTuitions} onChange={handleTutorProfileChange} min="0" required placeholder="e.g. 5" className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">{t('achievements')}</label>
+                                  <div className="relative"><Award className={`absolute top-4 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><textarea rows="4" name="achievements" value={tutorProfile.achievements} onChange={handleTutorProfileChange} placeholder="Mention scholarships, ranks..." className={`w-full py-3 rounded-lg border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 resize-none ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`}></textarea></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Identity Verification Uploads */}
+                            <div className="mt-8 pt-6 border-t border-slate-100">
+                              <h4 className="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2"><IdCard className="text-blue-500" /> {t('identityVerification')}</h4>
+                              <p className="text-sm text-slate-500 mb-5">{t('scanInstruction')}</p>
+                              
+                              <div className="flex gap-6 mb-6">
+                                <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name="idType" value="studentId" checked={idType === 'studentId'} onChange={(e) => setIdType(e.target.value)} className="w-4 h-4 text-emerald-600" /><span className="text-sm font-bold text-slate-600 group-hover:text-emerald-600">{t('studentId')}</span></label>
+                                <label className="flex items-center gap-2 cursor-pointer group"><input type="radio" name="idType" value="nidCard" checked={idType === 'nidCard'} onChange={(e) => setIdType(e.target.value)} className="w-4 h-4 text-emerald-600" /><span className="text-sm font-bold text-slate-600 group-hover:text-emerald-600">{t('nidCard')}</span></label>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:bg-emerald-50 relative group overflow-hidden">
+                                    <input type="file" accept="image/*" capture="environment" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setIdFront(e.target.files[0])} />
+                                    <UploadCloud size={32} className={`mb-3 ${idFront ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                                    <p className={`text-sm font-bold ${idFront ? 'text-emerald-700' : 'text-slate-700'}`}>{t('uploadFront')}</p>
+                                    <p className="text-xs text-slate-500 mt-1 truncate w-full px-4">{idFront ? idFront.name : 'Click to scan or upload'}</p>
+                                 </div>
+                                 <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:bg-emerald-50 relative group overflow-hidden">
+                                    <input type="file" accept="image/*" capture="environment" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => setIdBack(e.target.files[0])} />
+                                    <UploadCloud size={32} className={`mb-3 ${idBack ? 'text-emerald-500' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                                    <p className={`text-sm font-bold ${idBack ? 'text-emerald-700' : 'text-slate-700'}`}>{t('uploadBack')}</p>
+                                    <p className="text-xs text-slate-500 mt-1 truncate w-full px-4">{idBack ? idBack.name : 'Click to scan or upload'}</p>
+                                 </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                              <input type="checkbox" name="agreeTerms" id="terms" checked={tutorProfile.agreeTerms} onChange={handleTutorProfileChange} required className="w-5 h-5 rounded border-slate-300 text-emerald-600 cursor-pointer" />
+                              <label htmlFor="terms" className="text-sm text-slate-600 font-medium cursor-pointer flex items-center gap-2">{t('termsAgree')} <FileText size={16} className="text-emerald-500"/></label>
+                            </div>
+                            <button type="submit" className="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold text-lg hover:bg-emerald-700 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                              <CheckSquare size={20} /> {t('saveProfile')}
+                            </button>
+                          </form>
+                        </div>
+                      ) : activePage === 'messages' ? (
+                        /* --- MESSAGES VIEW (MEMBERSHIP GATED) --- */
+                        <div className="col-span-1 md:col-span-2 relative bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden h-[600px] flex animate-in fade-in duration-300">
+                          
+                          {!hasMembership ? (
+                            // LOCKED STATE
+                            <>
+                               {/* Blurred Background Fake List */}
+                               <div className="absolute inset-0 p-6 flex flex-col gap-4 opacity-30 filter blur-[6px] pointer-events-none select-none w-full">
+                                  {[1,2,3,4].map(i => (
+                                     <div key={i} className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl w-full border border-slate-200">
+                                       <div className="w-14 h-14 bg-slate-300 rounded-full"></div>
+                                       <div className="flex-1 space-y-3"><div className="h-4 bg-slate-300 w-1/3 rounded"></div><div className="h-3 bg-slate-300 w-2/3 rounded"></div></div>
+                                     </div>
+                                  ))}
+                               </div>
+                               {/* Upgrade Overlay */}
+                               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/50 backdrop-blur-sm z-10 p-6">
+                                 <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl max-w-lg w-full text-center border border-slate-100">
+                                   <div className="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"><Lock size={40} /></div>
+                                   <h2 className="text-2xl font-black text-slate-800 mb-3">{t('premiumRequired')}</h2>
+                                   <p className="text-slate-600 mb-8 font-medium leading-relaxed">{t('messagesLockedDesc').replace('{count}', mockChats.reduce((acc, curr) => acc + curr.unread, 0))}</p>
+                                   <button onClick={() => setHasMembership(true)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                      <Award size={24} /> {t('upgradeNow')} (Simulation)
+                                   </button>
+                                 </div>
+                               </div>
+                            </>
+                          ) : (
+                            // UNLOCKED ACTIVE CHAT INTERFACE
+                            <>
+                              {/* Chat List (Left Pane) */}
+                              <div className={`w-full md:w-1/3 border-r md:border-r border-slate-100 flex flex-col bg-white ${activeChat ? 'hidden md:flex' : 'flex'}`}>
+                                 <div className="p-5 border-b border-slate-100 bg-slate-50 font-black text-slate-800 flex items-center gap-2 text-lg"><MessageSquare className="text-emerald-500"/> {t('messages')}</div>
+                                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                    {mockChats.map(chat => (
+                                       <button key={chat.id} onClick={() => setActiveChat(chat)} className={`w-full text-left p-3 flex items-center gap-3 rounded-2xl transition-all ${activeChat?.id === chat.id ? 'bg-emerald-50 border border-emerald-100 shadow-sm' : 'hover:bg-slate-50 border border-transparent'}`}>
+                                         <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-bold text-lg rounded-full flex items-center justify-center shrink-0 shadow-inner">{chat.name.charAt(0)}</div>
+                                         <div className="flex-1 overflow-hidden">
+                                            <h4 className="font-bold text-slate-800 text-sm truncate">{chat.name}</h4>
+                                            <p className="text-xs text-slate-500 truncate mt-0.5">{chat.lastMessage}</p>
+                                         </div>
+                                         {chat.unread > 0 && <span className="bg-rose-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shrink-0 shadow-sm">{chat.unread}</span>}
+                                       </button>
+                                    ))}
+                                 </div>
+                              </div>
+                              
+                              {/* Chat View (Right Pane) */}
+                              <div className={`flex-1 flex flex-col bg-slate-50/50 ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
+                                 {activeChat ? (
+                                    <>
+                                      <div className="p-4 bg-white border-b border-slate-100 flex items-center gap-3 shadow-sm z-10 relative">
+                                        <button onClick={() => setActiveChat(null)} className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-full bg-slate-50"><ChevronLeft size={20}/></button>
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 text-indigo-600 font-bold rounded-full flex items-center justify-center shadow-inner">{activeChat.name.charAt(0)}</div>
+                                        <h4 className="font-bold text-slate-800">{activeChat.name}</h4>
+                                      </div>
+                                      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                                         <div className="flex flex-col items-start gap-1">
+                                           <span className="text-[10px] font-bold text-slate-400 ml-2">{activeChat.name}</span>
+                                           <div className="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 max-w-[85%] shadow-sm text-sm text-slate-700 leading-relaxed">{activeChat.lastMessage}</div>
+                                         </div>
+                                      </div>
+                                      <div className="p-4 bg-white border-t border-slate-200 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+                                         <input type="text" placeholder={t('typeMessage')} className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-5 py-3 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"/>
+                                         <button onClick={() => alert("Message sent securely! (Mock Action)")} className="bg-emerald-500 text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-emerald-600 transition-colors shadow-md shrink-0"><Send size={18} className={dir === 'rtl' ? '-scale-x-100' : ''}/></button>
+                                      </div>
+                                    </>
+                                 ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-6 text-center bg-slate-50">
+                                      <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center mb-6"><MessageSquare size={40} className="text-slate-400" /></div>
+                                      <p className="text-lg font-bold text-slate-600 mb-2">Your Inbox is Ready</p>
+                                      <p className="text-sm font-medium text-slate-500">Select a student or guardian from the list to start messaging.</p>
+                                    </div>
+                                 )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        /* POST ONBOARDING: Subject Selection & Video Uploads */
+                        <>
+                          <div className="col-span-1 md:col-span-2 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-slate-100">
+                            <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2"><BookOpen className="text-emerald-500" /> {t('teachingSubjects')}</h3>
+                            <div className="flex gap-3 mb-6 flex-wrap">
+                              {tutorSelectedSubjects.length === 0 && <span className="text-slate-400 italic text-sm">No subjects added.</span>}
+                              {tutorSelectedSubjects.map(item => {
+                                const subId = `${item.level}-${item.subject}`;
+                                return (
+                                <span key={subId} className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-semibold border border-emerald-200 flex items-center gap-2">
+                                  {t(item.level)} {t('Level')} - {t(item.subject)} <button onClick={() => setTutorSelectedSubjects(p => p.filter(s => s.subject !== item.subject || s.level !== item.level))}><X size={14} className="hover:text-red-500"/></button>
+                                </span>
+                              )})}
+                            </div>
+                            {tutorSelectedSubjects.length < 3 && (
+                                <div className="flex flex-col md:flex-row gap-4">
+                                  <select onChange={(e) => handleLevelChange(e.target.value)} value={selectedLevel || ''} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500">
+                                    <option value="">{t('step1')}</option>
+                                    <option value="SSC">{t('SSC')} {t('Level')}</option>
+                                    <option value="HSC">{t('HSC')} {t('Level')}</option>
+                                  </select>
+                                  <select disabled={!selectedLevel} onChange={(e) => handleGroupChange(e.target.value)} value={selectedGroup || ''} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50">
+                                    <option value="">{t('step2')}</option>
+                                    {selectedLevel && ['Science', 'Arts', 'Commerce'].map(grp => <option key={grp} value={grp}>{t(grp)}</option>)}
+                                  </select>
+                                  <select disabled={!selectedGroup} onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject || ''} className="flex-1 py-3 px-3 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 disabled:opacity-50">
+                                    <option value="">{t('step3')}</option>
+                                    {selectedLevel && selectedGroup && curriculumData[selectedLevel][selectedGroup].map(sub => <option key={sub} value={sub}>{t(sub)}</option>)}
+                                  </select>
+                                  <button onClick={() => { if(selectedSubject && selectedLevel && !tutorSelectedSubjects.some(s => s.subject === selectedSubject && s.level === selectedLevel)){ setTutorSelectedSubjects(prev => [...prev, {level: selectedLevel, subject: selectedSubject}]); setSelectedSubject(null); }}} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 flex items-center justify-center transition-all"><Plus size={20}/></button>
+                                </div>
+                            )}
+                          </div>
+
+                          {tutorSelectedSubjects.length > 0 && (
+                            <div className="col-span-1 md:col-span-2">
+                              <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><Video className="text-rose-500" /> {t('demoClass')}</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {tutorSelectedSubjects.map(item => {
+                                  const subId = `${item.level}-${item.subject}`;
+                                  return (
+                                  <div key={subId} className="bg-white p-5 rounded-2xl shadow-sm border-2 border-dashed border-slate-200 hover:border-emerald-400 transition-colors text-center flex flex-col">
+                                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-3 mx-auto">{t(item.level)} - {t(item.subject)}</span>
+                                    <p className="text-xs text-slate-500 mb-4">{t('videoInstruction')}</p>
+                                    <div className="relative mt-auto">
+                                      <input type="file" accept="video/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={(e) => { handleTutorVideoUpload(item, e.target.files[0]); e.target.value = null; }} />
+                                      <button className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${tutorVideos[subId] ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                        <UploadCloud size={16} /> {tutorVideos[subId] ? 'Published to Feed!' : t('uploadVideo')}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )})}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* --- FOOTER: TERMS & CONDITIONS SECTOR --- */}
+            <div className="mt-16 pt-8 border-t border-slate-200">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-2 text-slate-500">
+                  <GraduationCap size={24} className="text-slate-400" />
+                  <span className="font-bold text-slate-700">Tuition Hub &copy; {new Date().getFullYear()}</span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-6 text-sm font-bold text-slate-500">
+                  <button className="hover:text-blue-600 transition-colors flex items-center gap-1.5"><FileText size={16}/> {t('terms')}</button>
+                  <button className="hover:text-blue-600 transition-colors flex items-center gap-1.5"><ShieldAlert size={16}/> Privacy Policy</button>
+                  <button onClick={() => { setActivePage('support'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-blue-600 transition-colors flex items-center gap-1.5"><HelpCircle size={16}/> {t('support')}</button>
+                </div>
+              </div>
+              <p className="text-center text-xs text-slate-400 mt-6 max-w-4xl mx-auto leading-relaxed">
+                By accessing and using Tuition Hub, you agree to comply with our Terms & Conditions and Privacy Policy. All tutors undergo strict identity verification, but we strongly advise parents and students to exercise standard precautions. Sharing personal contact information (phone numbers, emails) or external links in public comment sections is strictly prohibited to ensure user privacy and overall security.
+              </p>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // VIEW C: INITIAL LOGIN / SIGNUP VIEW
+  return (
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden" dir={dir}>
+      <FloatingBackground />
+      <div className="relative z-10 bg-white/95 backdrop-blur-md w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+        
+        <div className="bg-slate-900 p-6 text-center">
+          <h1 className="text-2xl font-bold text-white flex items-center justify-center gap-2"><GraduationCap className="text-blue-400" size={28} /> Tuition Hub</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('subtitle')}</p>
+        </div>
+
+        <div className="flex border-b border-slate-200">
+          <button className={`flex-1 py-4 font-medium transition-colors ${!isLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'}`} onClick={() => setIsLogin(false)}>{t('signUp')}</button>
+          <button className={`flex-1 py-4 font-medium transition-colors ${isLogin ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'}`} onClick={() => setIsLogin(true)}>{t('logIn')}</button>
+        </div>
+
+        <div className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2 mb-6">
+              <label className="text-sm font-semibold text-slate-700 block">{t('iam')}</label>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.keys(roleConfig).map((r) => (
+                  <button key={r} type="button" onClick={() => setRole(r)} className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 ${role === r ? `${roleConfig[r].border} ${roleConfig[r].bgLight} ${roleConfig[r].text}` : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'}`}>
+                    {roleConfig[r].icon}<span className="text-xs font-medium mt-1">{roleConfig[r].label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className={`mt-3 p-3 rounded-lg text-sm text-center font-medium transition-all duration-300 ${roleConfig[role].bgLight} ${roleConfig[role].text}`}>"{roleConfig[role].message}"</div>
+            </div>
+
+            {/* DYNAMIC FORM FIELDS */}
+            {!isLogin && (
+              <>
+                <div className="relative"><User className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="name" placeholder={t('name')} required value={formData.name} onChange={handleInputChange} className={`w-full py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 transition-colors ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                <div className="relative"><Phone className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="tel" name="mobile" placeholder={t('mobile')} required value={formData.mobile} onChange={handleInputChange} className={`w-full py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 transition-colors ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+                <div className="relative"><MapPin className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="text" name="address" placeholder={t('address')} required value={formData.address} onChange={handleInputChange} className={`w-full py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 transition-colors ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+              </>
+            )}
+
+            <div className="relative"><Mail className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="email" name="email" placeholder={t('email')} required value={formData.email} onChange={handleInputChange} className={`w-full py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 transition-colors ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+            <div className="relative"><Lock className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${dir === 'rtl' ? 'right-3' : 'left-3'}`} size={18} /><input type="password" name="password" placeholder={t('password')} required value={formData.password} onChange={handleInputChange} className={`w-full py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50 transition-colors ${dir === 'rtl' ? 'pr-10 pl-4' : 'pl-10 pr-4'}`} /></div>
+
+            <button type="submit" disabled={isSubmitting} className={`w-full py-3 mt-2 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all hover:shadow-lg ${roleConfig[role].color} hover:opacity-90 disabled:opacity-70 disabled:cursor-not-allowed`}>
+              {isSubmitting ? t('processing') : <>{isLogin ? t('loginBtn') : t('createBtn')} <ArrowRight size={18} className={dir === 'rtl' ? 'rotate-180' : ''}/></>}
+            </button>
+          </form>
+
+          {/* Social Auth Separator */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-slate-200"></div><span className="px-3 text-xs text-slate-400 uppercase tracking-widest">{t('or')}</span><div className="flex-1 border-t border-slate-200"></div>
+          </div>
+
+          <button type="button" className="w-full py-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium flex items-center justify-center gap-3 hover:bg-slate-50 transition-colors">
+            <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+            {t('google')}
+          </button>
+        </div>
+      </div>
+      
+      {/* Language Selector Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-20">
+         <div className="relative">
+           <button onClick={() => setIsLangMenuExpanded(!isLangMenuExpanded)} className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg text-sm font-medium text-slate-700 flex items-center gap-2"><Globe size={16} />{selectedLanguage.split(' ')[0]}</button>
+           {isLangMenuExpanded && (
+             <div className="absolute bottom-full right-0 mb-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
+               {supportedLanguages.map(lang => <button key={lang} onClick={() => { setSelectedLanguage(lang); setIsLangMenuExpanded(false); }} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">{lang}</button>)}
+             </div>
+           )}
+         </div>
+      </div>
+    </div>
+  );
+}
